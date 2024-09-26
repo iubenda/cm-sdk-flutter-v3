@@ -45,36 +45,60 @@ class HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final viewModel = Provider.of<CmpViewModel>(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('CMP SDK V3 App'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ConsentLayerUIConfigCard(
+  // Function to show the UI Config Card in a modal
+  void _showConfigModal(BuildContext context) {
+    final viewModel = Provider.of<CmpViewModel>(context, listen: false);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: FractionallySizedBox(
+            heightFactor: 0.7, // Adjust the modal height if necessary
+            child: ConsentLayerUIConfigCard(
               onConfigChanged: (ConsentLayerUIConfig config) {
                 setState(() {});
               },
               onSubmit: (ConsentLayerUIConfig config) {
                 viewModel.setWebViewConfig(config);
+                Navigator.of(context).pop(); // Close the modal on submit
               },
             ),
-            const SizedBox(height: 24.0),
-            const ConfigSection(),
-            const SizedBox(height: 24.0),
-            const ActionButtons(),
-            const SizedBox(height: 24.0),
-            const StatusSection(),
-            const SizedBox(height: 24.0),
-            const LogsSection(),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Provider.of<CmpViewModel>(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('CMP SDK V3 App'),
+      ),
+      body: const SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ConfigSection(),
+            SizedBox(height: 24.0),
+            ActionButtons(),
+            SizedBox(height: 24.0),
+            StatusSection(),
+            SizedBox(height: 24.0),
+            LogsSection(),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showConfigModal(context), // Show the settings modal
+        child: const Icon(Icons.settings), // Settings icon for the button
       ),
     );
   }
