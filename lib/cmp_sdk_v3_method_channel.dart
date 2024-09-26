@@ -1,0 +1,266 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+
+import 'cmp_sdk_v3_platform_interface.dart';
+import 'consent_layer_ui_config.dart';
+import 'constants/ios/att_status.dart';
+
+/// An implementation of [CmpSdkPlatform] that communicates with native code
+/// through Flutter method channels for managing consent.
+class MethodChannelCmpSdk extends CmpSdkPlatform {
+  @visibleForTesting
+  final methodChannel = const MethodChannel('cmp_sdk_v3');
+
+  // Callbacks for various consent events.
+  DidShowConsentLayer? didShowConsentLayer;
+  DidCloseConsentLayer? didCloseConsentLayer;
+  DidReceiveConsent? didReceiveConsent;
+  DidReceiveError? didReceiveError;
+  DidChangeATTStatus? didChangeATTStatus;
+
+  /// Opens the consent layer if consent is required and hasn't been given yet.
+  @override
+  Future<void> checkWithServerAndOpenIfNecessary() async {
+    await methodChannel.invokeMethod('checkWithServerAndOpenIfNecessary');
+  }
+
+  /// Opens the consent layer.
+  @override
+  Future<void> openConsentLayer() async {
+    await methodChannel.invokeMethod('openConsentLayer');
+  }
+
+  /// Opens the consent layer.
+  @override
+  Future<void> jumpToSettings() async {
+    await methodChannel.invokeMethod('jumpToSettings');
+  }
+
+  /// Checks if there is consent for the specified vendor ID.
+  @override
+  Future<bool> hasVendorConsent(String id, {bool defaultReturn = true}) async {
+    final result =
+        await methodChannel.invokeMethod<bool>('hasVendorConsent', {'id': id});
+    return result ?? false;
+  }
+
+  /// Checks if there is consent for the specified purpose ID.
+  @override
+  Future<bool> hasPurposeConsent(String id, {bool defaultReturn = true}) async {
+    final result =
+        await methodChannel.invokeMethod<bool>('hasPurposeConsent', {'id': id});
+    return result ?? false;
+  }
+
+  /// Exports the current CMP string.
+  @override
+  Future<String?> exportCMPInfo() async {
+    final cmpString = await methodChannel.invokeMethod<String>('exportCMPInfo');
+    return cmpString;
+  }
+
+  /// Resets the consent data.
+  @override
+  Future<void> resetConsentManagementData() async {
+    await methodChannel.invokeMethod('resetConsentManagementData');
+  }
+
+  /// Retrieves a list of all vendors.
+  @override
+  Future<List<dynamic>> getAllVendorsIDs() async {
+    final vendors =
+        await methodChannel.invokeListMethod<dynamic>('getAllVendorsIDs');
+    return vendors ?? [];
+  }
+
+  /// Retrieves a list of all purposes.
+  @override
+  Future<List<dynamic>> getAllPurposesIDs() async {
+    final purposes =
+        await methodChannel.invokeListMethod<dynamic>('getAllPurposesIDs');
+    return purposes ?? [];
+  }
+
+  /// Checks if consent has been given.
+  @override
+  Future<bool> hasUserChoice() async {
+    final result = await methodChannel.invokeMethod<bool>('hasUserChoice');
+    return result ?? false;
+  }
+
+  /// Retrieves a list of enabled purposes.
+  @override
+  Future<List<dynamic>> getEnabledPurposesIDs() async {
+    final purposes =
+        await methodChannel.invokeListMethod<dynamic>('getEnabledPurposesIDs');
+    return purposes ?? [];
+  }
+
+  /// Retrieves a list of enabled vendors.
+  @override
+  Future<List<dynamic>> getEnabledVendorsIDs() async {
+    final vendors =
+        await methodChannel.invokeListMethod<dynamic>('getEnabledVendorsIDs');
+    return vendors ?? [];
+  }
+
+  /// Retrieves a list of disabled purposes.
+  @override
+  Future<List<dynamic>> getDisabledPurposesIDs() async {
+    final purposes =
+        await methodChannel.invokeListMethod<dynamic>('getDisabledPurposesIDs');
+    return purposes ?? [];
+  }
+
+  /// Retrieves a list of disabled vendors.
+  @override
+  Future<List<dynamic>> getDisabledVendorsIDs() async {
+    final vendors =
+        await methodChannel.invokeListMethod<dynamic>('getDisabledVendorsIDs');
+    return vendors ?? [];
+  }
+
+  /// Sets up callbacks for consent events.
+  @override
+  Future<void> addEventListeners({
+    DidShowConsentLayer? didShowConsentLayer,
+    DidCloseConsentLayer? didCloseConsentLayer,
+    DidReceiveConsent? didReceiveConsent,
+    DidReceiveError? didReceiveError,
+    DidChangeATTStatus? didChangeATTStatus,
+  }) async {
+    this.didShowConsentLayer = didShowConsentLayer;
+    this.didCloseConsentLayer = didCloseConsentLayer;
+    this.didReceiveConsent = didReceiveConsent;
+    this.didReceiveError = didReceiveError;
+    this.didChangeATTStatus = didChangeATTStatus;
+
+    // Notify native side to set up callbacks
+    methodChannel.setMethodCallHandler(_handleMethodCall);
+  }
+
+  /// Handles method calls from the native platform.
+  Future<void> _handleMethodCall(MethodCall call) async {
+    switch (call.method) {
+      case 'didShowConsentLayer':
+        didShowConsentLayer?.call();
+        break;
+      case 'didCloseConsentLayer':
+        didCloseConsentLayer?.call();
+        break;
+      case 'didReceiveConsent':
+        final args = call.arguments as Map<dynamic, dynamic>;
+        final consent = args['consent'] as String;
+        final jsonObject = args['jsonObject'] as Map<String, dynamic>;
+        didReceiveConsent?.call(consent, jsonObject);
+        break;
+      case 'didReceiveError':
+        if (call.arguments is Map) {
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final String error = args['error'] as String;
+          didReceiveError?.call(error);
+        }
+        break;
+      case 'didChangeATTStatus':
+        if (call.arguments is Map) {
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final oldStatus = args['oldStatus'] as int;
+          final newStatus = args['newStatus'] as int;
+          final lastUpdated = args['lastUpdated'] as DateTime;
+          didChangeATTStatus?.call(oldStatus, newStatus, lastUpdated);
+        }
+        break;
+      default:
+        if (kDebugMode) {
+          print('Unknown method called on CMP SDK plugin');
+        }
+    }
+  }
+
+  /// Imports a CMP string.
+  @override
+  Future<bool> importCMPInfo(String cmpString) async {
+    return await methodChannel
+        .invokeMethod('importCMPInfo', {'cmpString': cmpString});
+  }
+
+  // /// Checks if consent is required, with an option to use cached results.
+  // @override
+  // Future<bool> check({bool isCached = false}) async {
+  //   return await methodChannel.invokeMethod('check', {'isCached': isCached}) ??
+  //       false;
+  // }
+
+  /// Accepts all consents.
+  @override
+  Future<void> acceptAll() async {
+    await methodChannel.invokeMethod('acceptAll');
+  }
+
+  /// Rejects all consents.
+  @override
+  Future<void> rejectAll() async {
+    await methodChannel.invokeMethod('rejectAll');
+  }
+
+  /// request ATTPermission
+  @override
+  Future<void> requestATTPermission() async {
+    await methodChannel.invokeMethod('requestATTPermission');
+  }
+
+  @override
+  Future<void> acceptPurposes(List<String> purposes,
+      {bool updateVendors = true}) async {
+    await methodChannel.invokeMethod('acceptPurposes',
+        {'purposes': purposes, 'updateVendors': updateVendors});
+  }
+
+  @override
+  Future<void> acceptVendors(List<String> vendors) async {
+    await methodChannel.invokeMethod('acceptVendors', {'vendors': vendors});
+  }
+
+  @override
+  Future<void> rejectPurposes(List<String> purposes,
+      {bool updateVendors = true}) async {
+    await methodChannel.invokeMethod('rejectPurposes',
+        {'purposes': purposes, 'updateVendors': updateVendors});
+  }
+
+  @override
+  Future<void> rejectVendors(List<String> vendors) async {
+    await methodChannel.invokeMethod('rejectVendors', {'vendors': vendors});
+  }
+
+  @override
+  Future<bool> checkIfConsentIsRequired() async {
+    return await methodChannel.invokeMethod('checkIfConsentIsRequired');
+  }
+
+  @override
+  Future<ATTStatus> getATTAuthorizationStatus() async {
+    var status = await methodChannel.invokeMethod('getATTAuthorizationStatus');
+    return mapATTStatus(status);
+  }
+
+  @override
+  Future<void> setUrlConfig(
+      {required String id,
+      required String domain,
+      required String appName,
+      required String language}) async {
+    await methodChannel.invokeMethod('setUrlConfig',
+        {'id': id, 'domain': domain, 'appName': appName, 'language': language});
+  }
+
+  @override
+  Future<void> setWebViewConfig(ConsentLayerUIConfig config) async {
+    await methodChannel.invokeMethod('setWebViewConfig', config.toMap());
+  }
+
+  @override
+  Future<void> initialize() async {
+    await methodChannel.invokeMethod('initialize');
+  }
+}

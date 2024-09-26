@@ -1,0 +1,112 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0 effective-5.10 (swiftlang-6.0.0.9.10 clang-1600.0.26.2)
+// swift-module-flags: -target arm64-apple-ios13.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name cm_sdk_ios_v3
+import AdSupport
+import AppTrackingTransparency
+import Foundation
+import Network
+import Swift
+import UIKit
+import WebKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+@_exported import cm_sdk_ios_v3
+public struct CMPConstants {
+  public struct JavaScript {
+    public static let javascriptToExecute: Swift.String
+  }
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class CMPManager : ObjectiveC.NSObject {
+  @objc public static let shared: cm_sdk_ios_v3.CMPManager
+  @objc weak public var delegate: (any cm_sdk_ios_v3.CMPManagerDelegate)?
+  public func setUrlConfig(_ config: cm_sdk_ios_v3.UrlConfig)
+  public func setWebViewConfig(_ config: cm_sdk_ios_v3.ConsentLayerUIConfig)
+  public func setPresentingViewController(_ viewController: UIKit.UIViewController)
+  @objc public func hasUserChoice() -> Swift.Bool
+  @objc public func hasPurposeConsent(id: Swift.String) -> Swift.Bool
+  @objc public func hasVendorConsent(id: Swift.String) -> Swift.Bool
+  @objc public func exportCMPInfo() -> Swift.String
+  @objc public func getAllPurposesIDs() -> [Swift.String]
+  @objc public func getEnabledPurposesIDs() -> [Swift.String]
+  @objc public func getDisabledPurposesIDs() -> [Swift.String]
+  @objc public func getAllVendorsIDs() -> [Swift.String]
+  @objc public func getEnabledVendorsIDs() -> [Swift.String]
+  @objc public func getDisabledVendorsIDs() -> [Swift.String]
+  @objc deinit
+}
+extension cm_sdk_ios_v3.CMPManager {
+  @objc dynamic public func checkWithServerAndOpenIfNecessary(completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func openConsentLayer(completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func jumpToSettings(completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func checkIfConsentIsRequired(completion: @escaping (Swift.Bool) -> Swift.Void)
+  @objc dynamic public func acceptVendors(_ vendors: [Swift.String], completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func rejectVendors(_ vendors: [Swift.String], completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func acceptPurposes(_ purposes: [Swift.String], updatePurpose: Swift.Bool, completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func rejectPurposes(_ purposes: [Swift.String], updateVendor: Swift.Bool, completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func rejectAll(completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func acceptAll(completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func importCMPInfo(_ cmpString: Swift.String, completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @objc dynamic public func resetConsentManagementData(completion: @escaping (Foundation.NSError?) -> Swift.Void)
+  @available(iOS 14, *)
+  @objc dynamic public func requestATTAuthorization(completion: @escaping (cm_sdk_ios_v3.ATTManager.AuthorizationStatus) -> Swift.Void)
+  @available(iOS 14, *)
+  @objc dynamic public func getATTAuthorizationStatus() -> cm_sdk_ios_v3.ATTManager.AuthorizationStatus
+}
+extension cm_sdk_ios_v3.CMPManager {
+  @objc dynamic public func didReceiveConsentMessage(_ consent: Swift.String, jsonObject: [Swift.String : Any])
+  @objc dynamic public func didReceiveOpenMessage()
+  @objc dynamic public func didCloseConsentLayer()
+  @objc dynamic public func didReceiveError(_ error: Swift.String)
+}
+public struct ConsentLayerUIConfig {
+  public enum Position {
+    case fullScreen
+    case halfScreenTop
+    case halfScreenBottom
+    case custom(CoreFoundation.CGRect)
+  }
+  public enum BackgroundStyle {
+    case dimmed(UIKit.UIColor, CoreFoundation.CGFloat)
+    case blur(UIKit.UIBlurEffect.Style)
+    case color(UIKit.UIColor)
+    case none
+  }
+  public init(position: cm_sdk_ios_v3.ConsentLayerUIConfig.Position = .fullScreen, backgroundStyle: cm_sdk_ios_v3.ConsentLayerUIConfig.BackgroundStyle = .dimmed(.black, 0.5), cornerRadius: CoreFoundation.CGFloat = 0, respectsSafeArea: Swift.Bool = true, allowsOrientationChanges: Swift.Bool = true)
+}
+@_hasMissingDesignatedInitializers @available(iOS 14, *)
+@objcMembers public class ATTManager {
+  public static let shared: cm_sdk_ios_v3.ATTManager
+  @objc public enum AuthorizationStatus : Swift.Int {
+    case notDetermined = 0
+    case restricted = 1
+    case denied = 2
+    case authorized = 3
+    public init?(rawValue: Swift.Int)
+    @available(iOS 14, *)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  @objc public func requestTrackingAuthorization(completion: @escaping (cm_sdk_ios_v3.ATTManager.AuthorizationStatus) -> Swift.Void)
+  @objc public func getTrackingAuthorizationStatus() -> cm_sdk_ios_v3.ATTManager.AuthorizationStatus
+  @objc public func getIDFA() -> Swift.String?
+  @objc deinit
+}
+@objc public protocol CMPManagerDelegate {
+  @objc func didReceiveConsent(consent: Swift.String, jsonObject: [Swift.String : Any])
+  @objc func didShowConsentLayer()
+  @objc func didCloseConsentLayer()
+  @objc func didReceiveError(error: Swift.String)
+  @objc func didChangeATTStatus(oldStatus: Swift.Int, newStatus: Swift.Int, lastUpdated: Foundation.Date?)
+}
+public struct UrlConfig {
+  public init(id: Swift.String, domain: Swift.String, language: Swift.String, appName: Swift.String)
+}
+@available(iOS 14, *)
+extension cm_sdk_ios_v3.ATTManager.AuthorizationStatus : Swift.Equatable {}
+@available(iOS 14, *)
+extension cm_sdk_ios_v3.ATTManager.AuthorizationStatus : Swift.Hashable {}
+@available(iOS 14, *)
+extension cm_sdk_ios_v3.ATTManager.AuthorizationStatus : Swift.RawRepresentable {}
