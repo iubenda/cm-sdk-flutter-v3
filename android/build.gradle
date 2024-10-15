@@ -37,7 +37,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = "11"
     }
 
     sourceSets {
@@ -46,12 +46,12 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 2
+        minSdkVersion 21
     }
 
     dependencies {
-        implementation "org.jetbrains.kotlinx:kotlinx-serialization-json"
         implementation 'net.consentmanager.sdkv3:cmsdkv3:3.0.0'
+        implementation "org.jetbrains.kotlinx:kotlinx-serialization-json"
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.10.0'
     }

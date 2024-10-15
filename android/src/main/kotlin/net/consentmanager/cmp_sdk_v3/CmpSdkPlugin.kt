@@ -297,7 +297,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         }
     }
 
-    // CMPManagerDelegate implementation
+//    // CMPManagerDelegate implementation
     override fun didReceiveError(error: String) {
         val arguments = mapOf("error" to error)
         channel.invokeMethod("didReceiveError", arguments)
