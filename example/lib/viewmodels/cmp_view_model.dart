@@ -4,7 +4,7 @@ import 'package:cmp_sdk_v3/cmp_sdk_v3.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class CmpViewModel extends ChangeNotifier {
-  late CmpSdk _cmpSdkPlugin;
+  late CMPmanager _cmpSdkPlugin;
   String _consentStatus = '';
   String _callbackLogs = '';
   String _cmpString = '';
@@ -27,7 +27,7 @@ class CmpViewModel extends ChangeNotifier {
 
   void initCmp() async {
     try {
-      _cmpSdkPlugin = CmpSdk.instance;
+      _cmpSdkPlugin = CMPmanager.instance;
       await _cmpSdkPlugin.setUrlConfig(
         appName: "Test",
         id: "09cb5dca91e6b",

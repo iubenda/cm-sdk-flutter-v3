@@ -7,10 +7,10 @@ class ConsentLayerUIConfigCard extends StatefulWidget {
   final Function(ConsentLayerUIConfig) onSubmit;
 
   const ConsentLayerUIConfigCard({
-    Key? key,
+    super.key,
     required this.onConfigChanged,
     required this.onSubmit,
-  }) : super(key: key);
+  });
 
   @override
   ConsentLayerUIConfigCardState createState() =>

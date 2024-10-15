@@ -1,8 +1,8 @@
 PODS:
-  - cmp_sdk_v3 (2.5.3):
-    - CmpSdk (= 2.5.3)
+  - cm-sdk-ios-v3 (3.0.0)
+  - cmp_sdk_v3 (0.2.0):
+    - cm-sdk-ios-v3 (= 3.0.0)
     - Flutter
-  - CmpSdk (2.5.3)
   - Flutter (1.0.0)
   - fluttertoast (0.0.2):
     - Flutter
@@ -19,7 +19,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - CmpSdk
+    - cm-sdk-ios-v3
     - Toast
 
 EXTERNAL SOURCES:
@@ -33,13 +33,13 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  cmp_sdk_v3: ec392dfe40f2f363b8aac0e5aaadfd5747425795
-  CmpSdk: 8128acc9c426df92ef797f31429601130a3c71f4
+  cm-sdk-ios-v3: 4dbf5375dd64f0a2e60bb10b4697efb771c8c643
+  cmp_sdk_v3: 9c6d63f4e38b0b44b1e7f67c3c73433f65380c7c
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   fluttertoast: e9a18c7be5413da53898f660530c56f35edfba9c
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
 
-PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+PODFILE CHECKSUM: a57f30d18f102dd3ce366b1d62a55ecbef2158e5
 
 COCOAPODS: 1.15.2

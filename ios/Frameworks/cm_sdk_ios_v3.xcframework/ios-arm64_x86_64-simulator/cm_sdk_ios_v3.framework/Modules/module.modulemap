@@ -1,6 +1,0 @@
-framework module cm_sdk_ios_v3 {
-  umbrella header "cm_sdk_ios_v3.h"
-  export *
-
-  module * { export * }
-}

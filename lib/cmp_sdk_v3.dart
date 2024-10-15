@@ -5,20 +5,20 @@ import 'consent_layer_ui_config.dart';
 import 'constants/ios/att_status.dart';
 
 /// A Dart class providing access to CMP SDK functionalities.
-class CmpSdk {
+class CMPmanager {
   // The single instance of CmpSdk
-  static final CmpSdk _instance = CmpSdk._internal();
+  static final CMPmanager _instance = CMPmanager._internal();
 
   // A boolean to track if initialization has occurred
   static bool _isInitialized = false;
 
   // Private named constructor to prevent external instantiation.
-  CmpSdk._internal() {
+  CMPmanager._internal() {
     _initializeOnce();
   }
 
   // The public static accessor for the singleton instance
-  static CmpSdk get instance => _instance;
+  static CMPmanager get instance => _instance;
 
   /// Ensures that CmpSdkPlatform.instance.initialize() is called only once.
   void _initializeOnce() {

@@ -1,7 +1,6 @@
 package net.consentmanager.cmp_sdk_v3
 
 import android.app.Activity
-import android.util.Log
 import android.os.Handler
 import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -11,25 +10,35 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import net.consentmanager.sdk.CmpManager
-import net.consentmanager.sdk.consentlayer.model.CmpConfig
-import net.consentmanager.sdk.consentlayer.model.CmpUIConfig
-import net.consentmanager.sdk.consentlayer.model.CmpUIStrategy
-import net.consentmanager.sdk.consentlayer.model.valueObjects.ConsentType
-import java.util.Locale
+import kotlinx.serialization.json.JsonObject
+import net.consentmanager.cm_sdk_android_v3.CMPManager
+import net.consentmanager.cm_sdk_android_v3.CMPManagerDelegate
+import net.consentmanager.cm_sdk_android_v3.ConsentLayerUIConfig
+import net.consentmanager.cm_sdk_android_v3.UrlConfig
 
-/** CmpSdkPlugin */
-class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManagerDelegate {
+
     private lateinit var channel: MethodChannel
-    private var consentManager: CmpManager? = null
+    private var cmpManager: CMPManager? = null
+    private var urlConfig: UrlConfig = UrlConfig("", "", "", "")
+    private var webViewConfig: ConsentLayerUIConfig = ConsentLayerUIConfig(
+        position = ConsentLayerUIConfig.Position.FULL_SCREEN,
+        cornerRadius = 0f,
+        respectsSafeArea = true,
+        allowsOrientationChanges = true
+    )
     private var activityContext: Activity? = null
 
-    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "cmp_sdk_v3")
+    // FlutterPlugin interface implementation
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel = MethodChannel(binding.binaryMessenger, "cmp_sdk_v3")
         channel.setMethodCallHandler(this)
     }
 
-    // ActivityAware interface implementations
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+    }
+
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activityContext = binding.activity
     }
@@ -46,478 +55,297 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         activityContext = null
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
-        when (call.method) {
-            "createInstance" -> createInstance(call, result)
-            "createInstanceWithConfig" -> createInstanceWithConfig(call, result)
-            "initialize" -> initialize(result)
-            "setCallbacks" -> setCallbacks()
-            "openConsentLayerOnCheck" -> openConsentLayerOnCheck(result)
-            "openConsentLayer" -> openConsentLayer(result)
-            "hasVendor" -> hasVendor(call, result)
-            "hasPurpose" -> hasPurpose(call, result)
-            "exportCmpString" -> exportCmpString(result)
-            "reset" -> reset(result)
-            "getAllVendors" -> getAllVendors(result)
-            "getAllPurposes" -> getAllPurposes(result)
-            "hasConsent" -> hasConsent(result)
-            "getEnabledPurposes" -> getEnabledPurposes(result)
-            "getEnabledVendors" -> getEnabledVendors(result)
-            "getDisabledPurposes" -> getDisabledPurposes(result)
-            "getDisabledVendors" -> getDisabledVendors(result)
-            "getUSPrivacyString" -> getUSPrivacyString(result)
-            "getGoogleACString" -> getGoogleACString(result)
-            "consentRequestedToday" -> consentRequestedToday(result)
-            "importCmpString" -> importCmpString(call, result)
-            "check" -> check(call, result)
-            "acceptAll" -> acceptAll(result)
-            "rejectAll" -> rejectAll(result)
-            "enablePurposes" -> enablePurposes(call, result)
-            "disablePurposes" -> disablePurposes(call, result)
-            "enableVendors" -> enableVendors(call, result)
-            "disableVendors" -> disableVendors(call, result)
-            "configureConsentLayer" -> configureConsentLayer(call, result)
+    // Initialization and Configuration
+    private fun initializeCMPManager() {
+        val activity = activityContext ?: throw IllegalStateException("Current activity is null")
+        cmpManager = CMPManager.getInstance(activity, urlConfig, webViewConfig, this)
+        cmpManager?.setActivity(activity)
+    }
 
-            else -> result.notImplemented()
+    private fun initialize(result: Result) {
+        try {
+            initializeCMPManager()
+            result.success(null)
+        } catch (e: Exception) {
+            result.error("INIT_ERROR", "Failed to initialize CMPManager: ${e.localizedMessage}", null)
         }
     }
 
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel.setMethodCallHandler(null)
-    }
-
-    private fun createInstance(call: MethodCall, result: Result) {
-        // Extract arguments from the MethodCall object
-        val id =
-            call.argument<String>("id")
-                ?: return result.error("INVALID_ARGUMENTS", "ID is required", null)
-        val domain =
-            call.argument<String>("domain")
-                ?: return result.error("INVALID_ARGUMENTS", "Domain is required", null)
-        val appName =
-            call.argument<String>("appName")
-                ?: return result.error("INVALID_ARGUMENTS", "AppName is required", null)
-        val language =
-            call.argument<String>("language")
-                ?: return result.error("INVALID_ARGUMENTS", "Language is required", null)
-
-        // Configure CmpConfig with the extracted arguments
-        CmpConfig.id = id
-        CmpConfig.domain = domain
-        CmpConfig.appName = appName
-        CmpConfig.language = language
-        CmpConfig.timeout = 5000
-
-        // Create an instance of CmpManager with the configured CmpConfig
-        consentManager = activityContext?.let { CmpManager.createInstance(it, CmpConfig) }
-
-        // Return success result
-        result.success(null)
-    }
-
-    private fun createInstanceWithConfig(call: MethodCall, result: Result) {
-        val configMap =
-            call.arguments<Map<String, Any>>()
-                ?: return result.error("INVALID_ARGUMENTS", "Config map is required", null)
-
-        CmpConfig.id =
-            configMap["id"] as? String ?: CmpConfig.id // Keep existing value if not provided
-        CmpConfig.domain = configMap["domain"] as? String ?: CmpConfig.domain
-        CmpConfig.appName = configMap["appName"] as? String ?: CmpConfig.appName
-        CmpConfig.language = configMap["language"] as? String ?: CmpConfig.language
-        CmpConfig.gaid = configMap["idfaOrGaid"] as? String ?: CmpConfig.gaid
-        CmpConfig.timeout = configMap["timeout"] as? Int ?: CmpConfig.timeout
-        CmpConfig.jumpToSettingsPage =
-            configMap["jumpToSettingsPage"] as? Boolean ?: CmpConfig.jumpToSettingsPage
-        if (configMap["isDebugMode"] as Boolean) {
-            CmpConfig.enableDebugMode()
-        }
-
-        val screenConfigIdx = configMap["screenConfig"] as? String ?: "FULLSCREEN"
-
-        Log.d("CMPTEST", screenConfigIdx)
-        val screenConfig = mapScreenConfig(screenConfigIdx)
-
-
-        if (screenConfig == null) {
-            result.error("INVALID_ARGUMENTS", "Invalid or missing screenConfig", null)
+    private fun setWebViewConfig(call: MethodCall, result: Result) {
+        val args = call.arguments as? Map<String, Any> ?: run {
+            result.error("INVALID_ARGUMENTS", "Arguments for setting WebViewConfig are missing", null)
             return
         }
-
-        configureScreen(screenConfig)
-        val androidStyle = mapAndroidPresentationStyleToCmpUIStrategy(
-            configMap["androidPresentationStyle"] as? String ?: "POPUP"
-        )
-        CmpUIConfig.uiStrategy = androidStyle
-
-        consentManager = activityContext?.let { CmpManager.createInstance(it, CmpConfig) }
-
+        webViewConfig = CmpArgumentParser.parseConsentLayerUIConfig(args)
         result.success(null)
     }
 
-private fun initialize(result: Result) {
-    val handler = Handler(Looper.getMainLooper())
-    handler.post {
-        try {
-            consentManager?.initialize(activityContext!!)
-            result.success(null)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to initialize CMP: ${e.localizedMessage}", null)
+    private fun setUrlConfig(call: MethodCall, result: Result) {
+        val args = call.arguments as? Map<String, Any> ?: run {
+            result.error("INVALID_ARGUMENTS", "Arguments for setting UrlConfig are missing", null)
+            return
         }
-    }
-}
-
-
-    private fun setCallbacks() {
-        consentManager?.addEventListeners(
-            openListener = {
-                println("openListener triggered")
-                channel.invokeMethod("onOpen", null)
-            },
-            closeListener = {
-                println("onClose triggered")
-                channel.invokeMethod("onClose", null)
-            },
-            cmpNotOpenedCallback = { channel.invokeMethod("onNotOpened", null) },
-            onErrorCallback = { type, message ->
-                val errorMap = hashMapOf("type" to type.toString(), "message" to message)
-                channel.invokeMethod("onError", errorMap)
-            },
-            onButtonClickedCallback = { event ->
-                val buttonTypeMap = hashMapOf("buttonType" to event.toString())
-                channel.invokeMethod("onButtonClicked", buttonTypeMap)
-            },
-            googleConsentModeListener = { consentMap ->
-                val consentMapString = consentMap.mapKeys { (key, _) -> key.name }
-                    .mapValues { (_, value) -> value.name }
-
-                channel.invokeMethod(
-                    "onGoogleConsentUpdated",
-                    hashMapOf("consentMap" to consentMapString)
-                )
-            }
-        )
+        urlConfig = CmpArgumentParser.parseUrlConfig(args)
+        initializeCMPManager()
+        result.success(null)
     }
 
-    private fun openConsentLayerOnCheck(result: Result) {
-            val handler = Handler(Looper.getMainLooper())
-    handler.post {
-        try {
-            activityContext?.let { consentManager?.openConsentLayerOnCheck(it) }
-            result.success(null)
-        } catch (e: Exception) {
-            result.error(
-                "ERROR",
-                "Failed to open consent layer on check: ${e.localizedMessage}",
-                null
-            )
-        }
-    }
-    }
-
+    // Consent Layer Actions
     private fun openConsentLayer(result: Result) {
-            val handler = Handler(Looper.getMainLooper())
-    handler.post {
-        try {
-            activityContext?.let { consentManager?.openConsentLayer(it) }
-            result.success(null)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to open consent layer: ${e.localizedMessage}", null)
+        val handler = Handler(Looper.getMainLooper())
+        handler.post {
+            try {
+                cmpManager?.openConsentLayer {
+                    result.success(null)
+                }
+            } catch (e: Exception) {
+                result.error("CONSENT_LAYER_ERROR", "Failed to open consent layer: ${e.localizedMessage}", null)
+            }
         }
     }
+
+    private fun jumpToSettings(result: Result) {
+        try {
+            // TODO No Function
+            result.success(null)
+        } catch (e: Exception) {
+            result.error("SETTINGS_ERROR", "Failed to open settings: ${e.localizedMessage}", null)
+        }
     }
 
-    private fun hasVendor(call: MethodCall, result: Result) {
-        val id = call.argument<String>("id")
-        val defaultReturn = call.argument<Boolean?>("defaultReturn")
-        if (id == null) {
+    private fun checkWithServerAndOpenIfNecessary(result: Result) {
+        cmpManager?.checkWithServerAndOpenIfNecessary {
+            if (it.isSuccess) {
+                result.success(null)
+            } else {
+                result.error("SERVER_CHECK_ERROR", "Failed to check with server", null)
+            }
+        }
+    }
+
+    private fun checkIfConsentIsRequired(result: Result) {
+        try {
+             cmpManager?.checkIfConsentIsRequired { isRequired ->
+                result.success(isRequired)
+            }
+        } catch (e: Exception) {
+            result.error("CONSENT_CHECK_ERROR", "Failed to check consent requirement: ${e.localizedMessage}", null)
+        }
+    }
+
+    // Vendor and Purpose Consent Actions
+    private fun hasVendorConsent(call: MethodCall, result: Result) {
+        val id = call.argument<String>("id") ?: run {
             result.error("INVALID_ARGUMENTS", "Vendor ID is required", null)
-        } else {
-            try {
-                val hasConsent = consentManager?.hasVendor(id, defaultReturn ?: true) ?: false
-                result.success(hasConsent)
-            } catch (e: Exception) {
-                result.error("ERROR", "Failed to check vendor consent: ${e.localizedMessage}", null)
-            }
+            return
         }
-    }
-
-    private fun hasPurpose(call: MethodCall, result: Result) {
-        val id = call.argument<String>("id")
-        val defaultReturn = call.argument<Boolean?>("defaultReturn")
-        if (id == null) {
-            result.error("INVALID_ARGUMENTS", "Purpose ID is required", null)
-        } else {
-            try {
-                val hasConsent = consentManager?.hasPurpose(id, defaultReturn ?: true) ?: false
-                result.success(hasConsent)
-            } catch (e: Exception) {
-                result.error(
-                    "ERROR",
-                    "Failed to check purpose consent: ${e.localizedMessage}",
-                    null
-                )
-            }
-        }
-    }
-
-    private fun exportCmpString(result: Result) {
         try {
-            val cmpString = consentManager?.exportCmpString()
-            result.success(cmpString)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to export CMP string: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun reset(result: Result) {
-        try {
-            activityContext?.let { CmpManager.reset(it) }
-            result.success(null)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to reset CMP: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun getAllVendors(result: Result) {
-        try {
-            val vendors = consentManager?.getAllVendorsList()
-            result.success(vendors)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get all vendors: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun getAllPurposes(result: Result) {
-        try {
-            val purposes = consentManager?.getAllPurposeList()
-            result.success(purposes)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get all purposes: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun hasConsent(result: Result) {
-        try {
-            val hasConsent = consentManager?.hasConsent() ?: false
+            val hasConsent = cmpManager?.hasVendorConsent(id) ?: false
             result.success(hasConsent)
         } catch (e: Exception) {
-            result.error("ERROR", "Failed to check general consent: ${e.localizedMessage}", null)
+            result.error("CONSENT_ERROR", "Failed to check vendor consent: ${e.localizedMessage}", null)
         }
     }
 
-    private fun getEnabledPurposes(result: Result) {
-        try {
-            val enabledPurposes = consentManager?.getEnabledPurposeList()
-            result.success(enabledPurposes)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get enabled purposes: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun getEnabledVendors(result: Result) {
-        try {
-            val enabledVendors = consentManager?.getEnabledVendorList()
-            result.success(enabledVendors)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get enabled vendors: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun getDisabledPurposes(result: Result) {
-        try {
-            val disabledPurposes = consentManager?.getDisabledPurposes()
-            result.success(disabledPurposes)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get disabled purposes: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun getDisabledVendors(result: Result) {
-        try {
-            val disabledVendors = consentManager?.getDisabledVendors()
-            result.success(disabledVendors)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get disabled vendors: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun getUSPrivacyString(result: Result) {
-        try {
-            val usPrivacyString = consentManager?.getUSPrivacyString() ?: ""
-            result.success(usPrivacyString)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get US privacy string: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun getGoogleACString(result: Result) {
-        try {
-            val googleACString = consentManager?.getGoogleACString() ?: ""
-            result.success(googleACString)
-        } catch (e: Exception) {
-            result.error("ERROR", "Failed to get Google AC string: ${e.localizedMessage}", null)
-        }
-    }
-
-    private fun consentRequestedToday(result: Result) {
-        val consentRequestedToday = consentManager?.consentRequestedToday()
-        result.success(consentRequestedToday)
-    }
-
-    private fun configureScreen(screenConfig: ScreenConfig) {
-        when (screenConfig) {
-            ScreenConfig.FULLSCREEN -> CmpUIConfig.configureFullScreen()
-            ScreenConfig.HALFSCREEN_BOTTOM -> CmpUIConfig.configureHalfScreenBottom(activityContext!!)
-            ScreenConfig.HALFSCREEN_TOP -> CmpUIConfig.configureHalfScreenTop(activityContext!!)
-            ScreenConfig.CENTERSCREEN -> CmpUIConfig.configureCenterScreen(activityContext!!)
-            ScreenConfig.SMALL_CENTERSCREEN -> CmpUIConfig.configureSmallCenterScreen(
-                activityContext!!
-            )
-
-            ScreenConfig.LARGE_TOPSCREEN -> CmpUIConfig.configureLargeTopScreen(activityContext!!)
-            ScreenConfig.LARGE_BOTTOMSCREEN -> CmpUIConfig.configureLargeBottomScreen(
-                activityContext!!
-            )
-        }
-    }
-
-    private fun configureConsentLayer(call: MethodCall, result: Result) {
-        val screenConfigString = call.argument<String>("screenConfig")
-
-        if (screenConfigString == null) {
-            result.error("INVALID_ARGUMENTS", "screenConfig is required as a String", null)
+    private fun hasPurposeConsent(call: MethodCall, result: Result) {
+        val id = call.argument<String>("id") ?: run {
+            result.error("INVALID_ARGUMENTS", "Purpose ID is required", null)
             return
         }
-
-        // Map the screenConfig string to the ScreenConfig enum
-        val screenConfig = mapScreenConfig(screenConfigString)
-        val consentManager = this.consentManager // Assuming this is already initialized
-
-        if (screenConfig == null || consentManager == null) {
-            result.error("INVALID_ARGUMENTS", "Invalid or missing screenConfig", null)
-            return
-        }
-
-        configureScreen(screenConfig)
-
-        result.success(null) // Indicate success
-    }
-
-
-    // Function to import a CMP string
-    private fun importCmpString(call: MethodCall, result: Result) {
-        val cmpString = call.argument<String>("cmpString")
-        if (cmpString == null) {
-            result.error("INVALID_ARGUMENTS", "CMP string is required", null)
-        } else {
-            consentManager?.importCmpString(cmpString) { success, message ->
-                if (success) {
-                    result.success(true)
-                } else {
-                    result.error("IMPORT_FAILED", message, null)
-                }
-            }
+        try {
+            val hasConsent = cmpManager?.hasPurposeConsent(id) ?: false
+            result.success(hasConsent)
+        } catch (e: Exception) {
+            result.error("CONSENT_ERROR", "Failed to check purpose consent: ${e.localizedMessage}", null)
         }
     }
 
-    // Function to check if consent is required
-    private fun check(call: MethodCall, result: Result) {
-        val isCached = call.argument<Boolean>("isCached") ?: false
-        consentManager?.checkConsentIsRequired(
-            { isRequired -> result.success(isRequired) },
-            isCached
-        )
+    // Consent Management
+    private fun acceptAll(result: Result) {
+        cmpManager?.acceptAll {
+            result.success(null)
+        }
     }
 
     private fun rejectAll(result: Result) {
-        consentManager?.rejectAll { result.success(null) }
+        cmpManager?.rejectAll {
+            result.success(null)
+        }
     }
 
-    private fun acceptAll(result: Result) {
-        consentManager?.acceptAll { result.success(null) }
+    private fun acceptVendors(call: MethodCall, result: Result) {
+        val ids = call.argument<List<String>>("ids") ?: run {
+            result.error("INVALID_ARGUMENTS", "Vendor IDs are required", null)
+            return
+        }
+        cmpManager?.acceptVendors(ids) {
+            result.success(null)
+        }
     }
 
-    private fun enablePurposes(call: MethodCall, result: Result) {
-        val purposes = call.argument<List<String>>("purposes")
+    private fun rejectVendors(call: MethodCall, result: Result) {
+        val ids = call.argument<List<String>>("ids") ?: run {
+            result.error("INVALID_ARGUMENTS", "Vendor IDs are required", null)
+            return
+        }
+        cmpManager?.rejectVendors(ids) {
+            result.success(null)
+        }
+    }
+
+    private fun acceptPurposes(call: MethodCall, result: Result) {
+        val ids = call.argument<List<String>>("ids") ?: run {
+            result.error("INVALID_ARGUMENTS", "Purpose IDs are required", null)
+            return
+        }
         val updateVendors = call.argument<Boolean>("updateVendors") ?: true
-        if (purposes == null) {
-            result.error("INVALID_ARGUMENTS", "Purposes not provided", null)
-            return
-        }
-
-        consentManager?.enablePurposeList(purposes, updateVendors) {
-            result.success(null) // Notify Flutter that the operation completed
+        cmpManager?.acceptPurposes(ids, updateVendors) {
+            result.success(null)
         }
     }
 
-    private fun disablePurposes(call: MethodCall, result: Result) {
-        val purposes = call.argument<List<String>>("purposes")
+    private fun rejectPurposes(call: MethodCall, result: Result) {
+        val ids = call.argument<List<String>>("ids") ?: run {
+            result.error("INVALID_ARGUMENTS", "Purpose IDs are required", null)
+            return
+        }
         val updateVendors = call.argument<Boolean>("updateVendors") ?: true
-        if (purposes == null) {
-            result.error("INVALID_ARGUMENTS", "Purposes not provided", null)
-            return
-        }
-
-        consentManager?.disablePurposeList(purposes, updateVendors) {
-            result.success(null) // Notify Flutter that the operation completed
+        cmpManager?.rejectPurposes(ids, updateVendors) {
+            result.success(null)
         }
     }
 
-    private fun enableVendors(call: MethodCall, result: Result) {
-        val vendors = call.argument<List<String>>("vendors")
-        if (vendors == null) {
-            result.error("INVALID_ARGUMENTS", "Vendors not provided", null)
-            return
-        }
-
-        consentManager?.enableVendorList(vendors) {
-            result.success(null) // Notify Flutter that the operation completed
+    // Other Consent Functions
+    private fun exportCMPInfo(result: Result) {
+        try {
+            val cmpInfo = cmpManager?.exportCMPInfo()
+            result.success(cmpInfo)
+        } catch (e: Exception) {
+            result.error("EXPORT_ERROR", "Failed to export CMP info: ${e.localizedMessage}", null)
         }
     }
 
-    private fun disableVendors(call: MethodCall, result: Result) {
-        val vendors = call.argument<List<String>>("vendors")
-        if (vendors == null) {
-            result.error("INVALID_ARGUMENTS", "Vendors not provided", null)
-            return
-        }
-
-        consentManager?.disableVendorList(vendors) {
-            result.success(null) // Notify Flutter that the operation completed
+    private fun resetConsentManagementData(result: Result) {
+        try {
+            cmpManager?.resetConsentManagementData()
+            result.success(null)
+        } catch (e: Exception) {
+            result.error("RESET_ERROR", "Failed to reset consent data: ${e.localizedMessage}", null)
         }
     }
 
-}
-
-enum class ScreenConfig {
-    FULLSCREEN,
-    HALFSCREEN_BOTTOM,
-    HALFSCREEN_TOP,
-    CENTERSCREEN,
-    SMALL_CENTERSCREEN,
-    LARGE_TOPSCREEN,
-    LARGE_BOTTOMSCREEN
-}
-
-private fun mapAndroidPresentationStyleToCmpUIStrategy(styleString: String): CmpUIStrategy {
-    return when (styleString?.lowercase(Locale.ROOT)) {
-        "popup" -> CmpUIStrategy.POPUP
-        "dialog" -> CmpUIStrategy.DIALOG
-        "activity" -> CmpUIStrategy.ACTIVITY
-        else -> CmpUIStrategy.POPUP // Default strategy, you can change it as needed
+    private fun getAllVendorsIDs(result: Result) {
+        try {
+            val ids = cmpManager?.getAllVendorsIDs()
+            result.success(ids)
+        } catch (e: Exception) {
+            result.error("VENDORS_ERROR", "Failed to get all vendors IDs: ${e.localizedMessage}", null)
+        }
     }
-}
 
-private fun mapScreenConfig(screenConfigString: String): ScreenConfig? {
-    return when (screenConfigString) {
-        "fullScreen" -> ScreenConfig.FULLSCREEN
-        "halfScreenBottom" -> ScreenConfig.HALFSCREEN_BOTTOM
-        "halfScreenTop" -> ScreenConfig.HALFSCREEN_TOP
-        "centerScreen" -> ScreenConfig.CENTERSCREEN
-        "smallCenterScreen" -> ScreenConfig.SMALL_CENTERSCREEN
-        "largeTopScreen" -> ScreenConfig.LARGE_TOPSCREEN
-        "largeBottomScreen" -> ScreenConfig.LARGE_BOTTOMSCREEN
-        else -> null // Handle invalid or missing values
+    private fun getAllPurposesIDs(result: Result) {
+        try {
+            val ids = cmpManager?.getAllPurposesIDs()
+            result.success(ids)
+        } catch (e: Exception) {
+            result.error("PURPOSES_ERROR", "Failed to get all purposes IDs: ${e.localizedMessage}", null)
+        }
+    }
+
+    private fun hasUserChoice(result: Result) {
+        try {
+            val hasChoice = cmpManager?.hasUserChoice() ?: false
+            result.success(hasChoice)
+        } catch (e: Exception) {
+            result.error("USER_CHOICE_ERROR", "Failed to check user choice: ${e.localizedMessage}", null)
+        }
+    }
+
+    private fun getEnabledPurposesIDs(result: Result) {
+        try {
+            val ids = cmpManager?.getEnabledPurposesIDs()
+            result.success(ids)
+        } catch (e: Exception) {
+            result.error("ENABLED_PURPOSES_ERROR", "Failed to get enabled purposes IDs: ${e.localizedMessage}", null)
+        }
+    }
+
+    private fun getEnabledVendorsIDs(result: Result) {
+        try {
+            val ids = cmpManager?.getEnabledVendorsIDs()
+            result.success(ids)
+        } catch (e: Exception) {
+            result.error("ENABLED_VENDORS_ERROR", "Failed to get enabled vendors IDs: ${e.localizedMessage}", null)
+        }
+    }
+
+    private fun getDisabledPurposesIDs(result: Result) {
+        try {
+            val ids = cmpManager?.getDisabledPurposesIDs()
+            result.success(ids)
+        } catch (e: Exception) {
+            result.error("DISABLED_PURPOSES_ERROR", "Failed to get disabled purposes IDs: ${e.localizedMessage}", null)
+        }
+    }
+
+    private fun getDisabledVendorsIDs(result: Result) {
+        try {
+            val ids = cmpManager?.getDisabledVendorsIDs()
+            result.success(ids)
+        } catch (e: Exception) {
+            result.error("DISABLED_VENDORS_ERROR", "Failed to get disabled vendors IDs: ${e.localizedMessage}", null)
+        }
+    }
+
+    // CMPManagerDelegate implementation
+    override fun didReceiveError(error: String) {
+        val arguments = mapOf("error" to error)
+        channel.invokeMethod("didReceiveError", arguments)
+    }
+
+    override fun didReceiveConsent(consent: String, jsonObject: JsonObject) {
+        val arguments = mapOf(
+            "consent" to consent,
+            "jsonObject" to jsonObject.toString()
+        )
+        channel.invokeMethod("didReceiveConsent", arguments)
+    }
+
+    override fun didShowConsentLayer() {
+        channel.invokeMethod("didShowConsentLayer", null)
+    }
+
+    override fun didCloseConsentLayer() {
+        channel.invokeMethod("didCloseConsentLayer", null)
+    }
+
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+            "initialize" -> initialize(result)
+            "setWebViewConfig" -> setWebViewConfig(call, result)
+            "setUrlConfig" -> setUrlConfig(call, result)
+            "checkWithServerAndOpenIfNecessary" -> checkWithServerAndOpenIfNecessary(result)
+            "openConsentLayer" -> openConsentLayer(result)
+            "jumpToSettings" -> jumpToSettings(result)
+            "checkIfConsentIsRequired" -> checkIfConsentIsRequired(result)
+            "hasVendorConsent" -> hasVendorConsent(call, result)
+            "hasPurposeConsent" -> hasPurposeConsent(call, result)
+            "exportCMPInfo" -> exportCMPInfo(result)
+            "resetConsentManagementData" -> resetConsentManagementData(result)
+            "getAllVendorsIDs" -> getAllVendorsIDs(result)
+            "getAllPurposesIDs" -> getAllPurposesIDs(result)
+            "hasUserChoice" -> hasUserChoice(result)
+            "getEnabledPurposesIDs" -> getEnabledPurposesIDs(result)
+            "getEnabledVendorsIDs" -> getEnabledVendorsIDs(result)
+            "getDisabledPurposesIDs" -> getDisabledPurposesIDs(result)
+            "getDisabledVendorsIDs" -> getDisabledVendorsIDs(result)
+            "acceptAll" -> acceptAll(result)
+            "rejectAll" -> rejectAll(result)
+            "acceptVendors" -> acceptVendors(call, result)
+            "rejectVendors" -> rejectVendors(call, result)
+            "acceptPurposes" -> acceptPurposes(call, result)
+            "rejectPurposes" -> rejectPurposes(call, result)
+            else -> result.notImplemented()
+        }
     }
 }

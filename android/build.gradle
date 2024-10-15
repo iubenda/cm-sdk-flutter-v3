@@ -2,7 +2,7 @@ group 'net.consentmanager.cmp_sdk_v3'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.9.0'
     repositories {
         google()
         mavenCentral()
@@ -32,12 +32,12 @@ android {
     compileSdkVersion 34
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
 
     sourceSets {
@@ -46,13 +46,14 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 2
     }
 
     dependencies {
-        implementation 'net.consentmanager.sdk:android:2.5.2'
+        implementation "org.jetbrains.kotlinx:kotlinx-serialization-json"
+        implementation 'net.consentmanager.sdkv3:cmsdkv3:3.0.0'
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
-        testImplementation 'org.mockito:mockito-core:5.1.1'
+        testImplementation 'org.mockito:mockito-core:5.10.0'
     }
 
     testOptions {
