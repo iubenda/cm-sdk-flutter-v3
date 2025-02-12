@@ -14,9 +14,29 @@ class ActionButtons extends StatelessWidget {
       child: Row(
         children: [
           _buildIconActionButton(
+            label: 'User Status',
+            icon: Icons.person_outline,
+            onPressed: viewModel.getUserStatus,
+          ),
+          _buildIconActionButton(
+            label: 'Status for Purpose c53',
+            icon: Icons.assignment_outlined,
+            onPressed: () => viewModel.getStatusForPurpose('c53'),
+          ),
+          _buildIconActionButton(
+            label: 'Status for Vendor s2789',
+            icon: Icons.business_outlined,
+            onPressed: () => viewModel.getStatusForVendor('s2789'),
+          ),
+          _buildIconActionButton(
+            label: 'Google Consent',
+            icon: Icons.settings_applications_outlined,
+            onPressed: viewModel.getGoogleConsentModeStatus,
+          ),
+          _buildIconActionButton(
             label: 'Open',
             icon: Icons.open_in_browser,
-            onPressed: viewModel.openConsentLayer,
+            onPressed: viewModel.forceOpen,
           ),
           _buildIconActionButton(
             label: 'Accept',
@@ -32,16 +52,6 @@ class ActionButtons extends StatelessWidget {
             label: 'Status',
             icon: Icons.info,
             onPressed: viewModel.getStatus,
-          ),
-          _buildIconActionButton(
-            label: 'Vendor Consent',
-            icon: Icons.check_circle,
-            onPressed: viewModel.checkVendorConsent,
-          ),
-          _buildIconActionButton(
-            label: 'Purpose Consent',
-            icon: Icons.assignment_turned_in,
-            onPressed: viewModel.checkPurposeConsent,
           ),
           _buildIconActionButton(
             label: 'Import CMP',

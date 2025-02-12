@@ -156,6 +156,48 @@ class MockCmpSdkPlatform
   Future<void> setWebViewConfig(ConsentLayerUIConfig config) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> checkAndOpen({bool jumpToSettings = false}) {
+    // TODO: implement checkAndOpen
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> forceOpen({bool jumpToSettings = false}) {
+    // TODO: implement forceOpen
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, String>> getGoogleConsentModeStatus() {
+    // TODO: implement getGoogleConsentModeStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ConsentStatus> getStatusForPurpose(String id) {
+    // TODO: implement getStatusForPurpose
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ConsentStatus> getStatusForVendor(String id) {
+    // TODO: implement getStatusForVendor
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<UserConsentStatus> getUserStatus() {
+    // TODO: implement getUserStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) {
+    // TODO: implement setOnClickLinkCallback
+    throw UnimplementedError();
+  }
 }
 
 void main() {

@@ -20,24 +20,28 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Opens the consent layer if consent is required and hasn't been given yet.
   @override
+  @Deprecated('Use checkAndOpen() instead')
   Future<void> checkWithServerAndOpenIfNecessary() async {
     await methodChannel.invokeMethod('checkWithServerAndOpenIfNecessary');
   }
 
   /// Opens the consent layer.
   @override
+  @Deprecated('Use forceOpen() instead')
   Future<void> openConsentLayer() async {
     await methodChannel.invokeMethod('openConsentLayer');
   }
 
   /// Opens the consent layer.
   @override
+  @Deprecated('Use forceOpen() with the jumpToSettings parameters instead')
   Future<void> jumpToSettings() async {
     await methodChannel.invokeMethod('jumpToSettings');
   }
 
   /// Checks if there is consent for the specified vendor ID.
   @override
+  @Deprecated('Use getStatusForVendor() instead')
   Future<bool> hasVendorConsent(String id, {bool defaultReturn = true}) async {
     final result =
         await methodChannel.invokeMethod<bool>('hasVendorConsent', {'id': id});
@@ -46,6 +50,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Checks if there is consent for the specified purpose ID.
   @override
+  @Deprecated('Use getStatusForPurpose() instead')
   Future<bool> hasPurposeConsent(String id, {bool defaultReturn = true}) async {
     final result =
         await methodChannel.invokeMethod<bool>('hasPurposeConsent', {'id': id});
@@ -67,6 +72,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Retrieves a list of all vendors.
   @override
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getAllVendorsIDs() async {
     final vendors =
         await methodChannel.invokeListMethod<dynamic>('getAllVendorsIDs');
@@ -75,6 +81,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Retrieves a list of all purposes.
   @override
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getAllPurposesIDs() async {
     final purposes =
         await methodChannel.invokeListMethod<dynamic>('getAllPurposesIDs');
@@ -83,6 +90,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Checks if consent has been given.
   @override
+  @Deprecated('Use getUserStatus() instead')
   Future<bool> hasUserChoice() async {
     final result = await methodChannel.invokeMethod<bool>('hasUserChoice');
     return result ?? false;
@@ -90,6 +98,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Retrieves a list of enabled purposes.
   @override
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getEnabledPurposesIDs() async {
     final purposes =
         await methodChannel.invokeListMethod<dynamic>('getEnabledPurposesIDs');
@@ -98,6 +107,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Retrieves a list of enabled vendors.
   @override
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getEnabledVendorsIDs() async {
     final vendors =
         await methodChannel.invokeListMethod<dynamic>('getEnabledVendorsIDs');
@@ -106,6 +116,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Retrieves a list of disabled purposes.
   @override
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getDisabledPurposesIDs() async {
     final purposes =
         await methodChannel.invokeListMethod<dynamic>('getDisabledPurposesIDs');
@@ -114,6 +125,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   /// Retrieves a list of disabled vendors.
   @override
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getDisabledVendorsIDs() async {
     final vendors =
         await methodChannel.invokeListMethod<dynamic>('getDisabledVendorsIDs');
@@ -184,13 +196,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
         .invokeMethod('importCMPInfo', {'cmpString': cmpString});
   }
 
-  // /// Checks if consent is required, with an option to use cached results.
-  // @override
-  // Future<bool> check({bool isCached = false}) async {
-  //   return await methodChannel.invokeMethod('check', {'isCached': isCached}) ??
-  //       false;
-  // }
-
   /// Accepts all consents.
   @override
   Future<void> acceptAll() async {
@@ -234,6 +239,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   }
 
   @override
+  @Deprecated('Use checkAndOpen() instead')
   Future<bool> checkIfConsentIsRequired() async {
     return await methodChannel.invokeMethod('checkIfConsentIsRequired');
   }
@@ -262,5 +268,57 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<void> initialize() async {
     await methodChannel.invokeMethod('initialize');
+  }
+
+  // Methods added on v3.1.0
+  @override
+  Future<void> forceOpen({bool jumpToSettings = false}) async {
+    await methodChannel.invokeMethod('forceOpen', {'jumpToSettings': jumpToSettings});
+  }
+
+  @override
+  Future<void> checkAndOpen({bool jumpToSettings = false}) async {
+    await methodChannel.invokeMethod('checkAndOpen', {'jumpToSettings': jumpToSettings});
+  }
+
+  OnClickLinkCallback? _onClickLinkCallback;
+
+  @override
+  Future<UserConsentStatus> getUserStatus() async {
+    final result = await methodChannel.invokeMethod<Map<dynamic, dynamic>>('getUserStatus');
+    return UserConsentStatus.fromJson(Map<String, dynamic>.from(result!));
+  }
+
+  @override
+  Future<ConsentStatus> getStatusForPurpose(String id) async {
+    final result = await methodChannel.invokeMethod<int>('getStatusForPurpose', {'id': id});
+    return ConsentStatus.values[result!];
+  }
+
+  @override
+  Future<ConsentStatus> getStatusForVendor(String id) async {
+    final result = await methodChannel.invokeMethod<int>('getStatusForVendor', {'id': id});
+    return ConsentStatus.values[result!];
+  }
+
+  @override
+  Future<Map<String, String>> getGoogleConsentModeStatus() async {
+    final result = await methodChannel.invokeMethod<Map<dynamic, dynamic>>('getGoogleConsentModeStatus');
+    return Map<String, String>.from(result!);
+  }
+
+  @override
+  Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) async {
+    _onClickLinkCallback = callback;
+    // Register platform channel method handler if not already done
+    if (callback != null) {
+      methodChannel.setMethodCallHandler((call) async {
+        if (call.method == 'onClickLink') {
+          final url = call.arguments as String;
+          return _onClickLinkCallback?.call(url) ?? false;
+        }
+        return null;
+      });
+    }
   }
 }

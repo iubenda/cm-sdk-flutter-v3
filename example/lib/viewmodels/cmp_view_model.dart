@@ -1,3 +1,4 @@
+import 'package:cmp_sdk_v3/cmp_sdk_v3_platform_interface.dart';
 import 'package:cmp_sdk_v3/consent_layer_ui_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cmp_sdk_v3/cmp_sdk_v3.dart';
@@ -221,5 +222,66 @@ class CmpViewModel extends ChangeNotifier {
   void openConsentLayer() async {
     await _cmpSdkPlugin.openConsentLayer();
     notifyListeners();
+  }
+
+  Future<void> getUserStatus() async {
+    try {
+      final status = await _cmpSdkPlugin.getUserStatus();
+      final statusMessage = '''
+User Choice: ${status.hasUserChoice}
+TCF: ${status.tcf}
+Additional Consent: ${status.addtlConsent}
+Regulation: ${status.regulation}
+
+Vendors Status:
+${status.vendors.entries.map((e) => '${e.key}: ${e.value}').join('\n')}
+
+Purposes Status:
+${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join('\n')}
+''';
+
+      logCallback(statusMessage);
+      Fluttertoast.showToast(msg: 'Check logs for User Status details');
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Error getting user status: $e');
+    }
+  }
+
+  Future<void> getStatusForPurpose(String purposeId) async {
+    try {
+      final status = await _cmpSdkPlugin.getStatusForPurpose(purposeId);
+      Fluttertoast.showToast(msg: 'Purpose $purposeId status: $status');
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Error getting purpose status: $e');
+    }
+  }
+
+  Future<void> getStatusForVendor(String vendorId) async {
+    try {
+      final status = await _cmpSdkPlugin.getStatusForVendor(vendorId);
+      Fluttertoast.showToast(msg: 'Vendor $vendorId status: $status');
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Error getting vendor status: $e');
+    }
+  }
+
+  Future<void> getGoogleConsentModeStatus() async {
+    try {
+      final settings = await _cmpSdkPlugin.getGoogleConsentModeStatus();
+      final settingsStr = settings.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+      logCallback('Google Consent Mode Settings:\n$settingsStr');
+      Fluttertoast.showToast(msg: 'Check logs for Google Consent Mode settings');
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Error getting Google Consent Mode status: $e');
+    }
+  }
+
+  Future<void> forceOpen({bool jumpToSettings = false}) async {
+    await _cmpSdkPlugin.forceOpen(jumpToSettings: jumpToSettings);
+    notifyListeners();
+  }
+
+  void setOnClickLinkCallback(Function(String) callback) {
+    _cmpSdkPlugin.setOnClickLinkCallback(callback as OnClickLinkCallback?);
   }
 }
