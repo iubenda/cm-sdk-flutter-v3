@@ -21,13 +21,14 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
 
     private lateinit var channel: MethodChannel
     private var cmpManager: CMPManager? = null
-    private var urlConfig: UrlConfig = UrlConfig("", "", "", "")
+    private var urlConfig: UrlConfig? = null  // Change to nullable
     private var webViewConfig: ConsentLayerUIConfig = ConsentLayerUIConfig(
         position = ConsentLayerUIConfig.Position.FULL_SCREEN,
         cornerRadius = 0f,
         respectsSafeArea = true,
         allowsOrientationChanges = true
     )
+
     private var activityContext: Activity? = null
 
     // FlutterPlugin interface implementation
@@ -42,6 +43,9 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activityContext = binding.activity
+        if (urlConfig != null) {  // Initialize if config was set before activity
+            initializeCMPManager()
+        }
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -59,7 +63,8 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     // Initialization and Configuration
     private fun initializeCMPManager() {
         val activity = activityContext ?: throw IllegalStateException("Current activity is null")
-        cmpManager = CMPManager.getInstance(activity, urlConfig, webViewConfig, this)
+        val config = urlConfig ?: throw IllegalStateException("URL config not set")  // Add null check
+        cmpManager = CMPManager.getInstance(activity, config, webViewConfig, this)
         cmpManager?.setActivity(activity)
     }
 
@@ -97,9 +102,12 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName")
 
         urlConfig = UrlConfig(id, domain, language, appName)
+        cmpManager = null  // Clear existing instance
 
         try {
-            initializeCMPManager()
+            if (activityContext != null) {  // Only initialize if activity is ready
+                initializeCMPManager()
+            }
             result.success(null)
         } catch (e: Exception) {
             result.error("URL_CONFIG_ERROR", "Failed to set URL config: ${e.message}", null)
