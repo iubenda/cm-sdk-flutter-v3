@@ -66,6 +66,18 @@ class CMPMethodHandler {
             requestATTPermission(result: result)
         case "getATTAuthorizationStatus":
             getATTAuthorizationStatus(result: result)
+        case "checkAndOpen":
+            checkAndOpen(call: call, result: result)
+        case "forceOpen":
+            forceOpen(call: call, result: result)
+        case "getUserStatus":
+            getUserStatus(result: result)
+        case "getStatusForPurpose":
+            getStatusForPurpose(call: call, result: result)
+        case "getStatusForVendor":
+            getStatusForVendor(call: call, result: result)
+        case "getGoogleConsentModeStatus":
+            getGoogleConsentModeStatus(result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -98,6 +110,84 @@ class CMPMethodHandler {
         let config = CMPArgumentParser.parseUrlConfig(from: args)
         cmpManagerService?.setUrlConfig(config: config)
         result("Consent URL Configured")
+    }
+
+    // MARK: - New Methods (v3.1.0+)
+
+    private func getUserStatus(result: @escaping FlutterResult) {
+        if let status = cmpManagerService?.getUserStatus() {
+            result(status) // status is already a dictionary with the correct format
+        } else {
+            result([
+                "hasUserChoice": BridgeUserChoiceStatus.choiceDoesntExist.rawValue,
+                "vendors": [:],
+                "purposes": [:],
+                "tcf": "",
+                "addtlConsent": "",
+                "regulation": ""
+            ])
+        }
+    }
+
+    private func getStatusForPurpose(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any],
+              let purposeId = args["id"] as? String else {
+            result(FlutterError(code: "INVALID_ARGUMENT",
+                              message: "Purpose ID is required",
+                              details: nil))
+            return
+        }
+
+        let status = cmpManagerService?.getStatusForPurpose(purposeId: purposeId)
+        result(status?.rawValue ?? "choiceDoesntExist")
+    }
+
+    private func getStatusForVendor(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any],
+              let vendorId = args["id"] as? String else {
+            result(FlutterError(code: "INVALID_ARGUMENT",
+                              message: "Vendor ID is required",
+                              details: nil))
+            return
+        }
+
+        let status = cmpManagerService?.getStatusForVendor(vendorId: vendorId)
+        result(status?.rawValue ?? "choiceDoesntExist")
+    }
+
+    private func getGoogleConsentModeStatus(result: @escaping FlutterResult) {
+        let status = cmpManagerService?.getGoogleConsentModeStatus()
+        result(status ?? [:])
+    }
+
+    private func checkAndOpen(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let args = call.arguments as? [String: Any]
+        let jumpToSettings = args?["jumpToSettings"] as? Bool ?? false
+
+        cmpManagerService?.checkAndOpen(jumpToSettings: jumpToSettings) { error in
+            if let error = error {
+                result(FlutterError(code: "CHECK_AND_OPEN_ERROR",
+                                  message: error,
+                                  details: nil))
+            } else {
+                result(nil)
+            }
+        }
+    }
+
+    private func forceOpen(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let args = call.arguments as? [String: Any]
+        let jumpToSettings = args?["jumpToSettings"] as? Bool ?? false
+
+        cmpManagerService?.forceOpen(jumpToSettings: jumpToSettings) { error in
+            if let error = error {
+                result(FlutterError(code: "FORCE_OPEN_ERROR",
+                                  message: error,
+                                  details: nil))
+            } else {
+                result(nil)
+            }
+        }
     }
 
     private func checkWithServerAndOpenIfNecessary(result: @escaping FlutterResult) {

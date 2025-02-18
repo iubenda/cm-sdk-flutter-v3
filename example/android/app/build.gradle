@@ -63,4 +63,6 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+    implementation 'net.consentmanager.sdkv3:cmsdkv3:3.0.1'
+}

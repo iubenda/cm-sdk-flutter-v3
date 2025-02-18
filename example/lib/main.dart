@@ -1,12 +1,6 @@
-import 'package:cmp_sdk_example/widgets/consent_layer_ui_config_card.dart';
-import 'package:cmp_sdk_v3/consent_layer_ui_config.dart';
+import 'package:cmp_sdk_example/cmp_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'viewmodels/cmp_view_model.dart';
-import 'views/config_section.dart';
-import 'views/action_buttons.dart';
-import 'views/status_section.dart';
-import 'views/logs_section.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,12 +11,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => CmpViewModel()),
-      ],
-      child: const MaterialApp(
-        home: HomeScreen(),
+    return ChangeNotifierProvider.value(
+      value: CmpViewModel.instance,
+      child: MaterialApp(
+        title: 'CMP Demo App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: const HomeScreen(),
       ),
     );
   }
@@ -39,66 +36,77 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Calling initCmp() after the widget is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CmpViewModel>(context, listen: false).initCmp();
+      CmpViewModel.instance.initCmp();
     });
   }
 
-  // Function to show the UI Config Card in a modal
-  void _showConfigModal(BuildContext context) {
-    final viewModel = Provider.of<CmpViewModel>(context, listen: false);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: FractionallySizedBox(
-            heightFactor: 0.7, // Adjust the modal height if necessary
-            child: ConsentLayerUIConfigCard(
-              onConfigChanged: (ConsentLayerUIConfig config) {
-                setState(() {});
-              },
-              onSubmit: (ConsentLayerUIConfig config) {
-                viewModel.setWebViewConfig(config);
-                Navigator.of(context).pop(); // Close the modal on submit
-              },
+  Widget _buildButton(String text, Color color, VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            padding: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-        );
-      },
+          child: Text(text, style: const TextStyle(color: Colors.white)),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<CmpViewModel>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CMP SDK V3 App'),
+        title: const Text('CM Flutter DemoApp'),
       ),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ConfigSection(),
-            SizedBox(height: 24.0),
-            ActionButtons(),
-            SizedBox(height: 24.0),
-            StatusSection(),
-            SizedBox(height: 24.0),
-            LogsSection(),
+            _buildButton('Get User Status', Colors.blue,
+                    () => CmpViewModel.instance.getUserStatus()),
+            _buildButton('Get CMP String', Colors.teal,
+                    () => CmpViewModel.instance.exportCMPInfo()),
+            _buildButton('Status for Purpose c53', const Color(0xFF3CB371),
+                    () => CmpViewModel.instance.getPurposeStatus()),
+            _buildButton('Enable Purposes c52 and c53', const Color(0xFF3CB371),
+                    () => CmpViewModel.instance.enablePurposes()),
+            _buildButton('Disable Purposes c52 and c53', Colors.red,
+                    () => CmpViewModel.instance.disablePurposes()),
+            _buildButton('Status for Vendor ID s2789', Colors.cyan,
+                    () => CmpViewModel.instance.getVendorStatus()),
+            _buildButton('Enable Vendors s2790 and s2791', Colors.cyan,
+                    () => CmpViewModel.instance.enableVendors()),
+            _buildButton('Disable Vendors s2790 and s2791', Colors.red,
+                    () => CmpViewModel.instance.disableVendors()),
+            _buildButton('Reject All', Colors.red,
+                    () => CmpViewModel.instance.rejectAll()),
+            _buildButton('Accept All', Colors.green,
+                    () => CmpViewModel.instance.acceptAll()),
+            _buildButton('Check and Open Consent Layer', Colors.indigo,
+                    () => CmpViewModel.instance.checkAndOpen()),
+            _buildButton('Open Consent Layer', Colors.indigo,
+                    () => CmpViewModel.instance.forceOpen()),
+            _buildButton('Get Google Consent Mode', Colors.indigo,
+                    () => CmpViewModel.instance.getGoogleConsentStatus()),
+            _buildButton('Jump to CMP Settings', Colors.indigo,
+                    () => CmpViewModel.instance.jumpToSettings()),
+            _buildButton('Import CMP String', Colors.teal,
+                    () => CmpViewModel.instance.importCMPString()),
+            _buildButton('Reset all CMP Info', Colors.black,
+                    () => CmpViewModel.instance.resetConsent()),
+            _buildButton('Request ATT Authorization', Colors.purple,
+                    () => CmpViewModel.instance.requestATTPermission()),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showConfigModal(context), // Show the settings modal
-        child: const Icon(Icons.settings), // Settings icon for the button
       ),
     );
   }
