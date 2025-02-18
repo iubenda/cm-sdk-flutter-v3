@@ -190,6 +190,7 @@ class CMPMethodHandler {
         }
     }
 
+
     private func checkWithServerAndOpenIfNecessary(result: @escaping FlutterResult) {
         cmpManagerService?.checkWithServerAndOpenIfNecessary { error in
             if let error = error {

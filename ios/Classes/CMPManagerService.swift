@@ -207,7 +207,7 @@ class CMPManagerService: NSObject {
                 return createEmptyUserStatus()
             }
 
-            return [
+            var statusDict: [String: Any] = [
                 "hasUserChoice": mapChoiceStatus(response.status),
                 "vendors": response.vendors,
                 "purposes": response.purposes,
@@ -215,6 +215,8 @@ class CMPManagerService: NSObject {
                 "addtlConsent": response.addtlConsent,
                 "regulation": response.regulation
             ]
+
+            return convertDateValues(statusDict)
         }
 
         func getGoogleConsentModeStatus() -> [String: String] {
@@ -274,14 +276,19 @@ class CMPManagerService: NSObject {
 }
 
 extension CMPManagerService: CMPManagerDelegate {
- public func didChangeATTStatus(oldStatus: Int, newStatus: Int, lastUpdated: Date?) {
-        let dateFormatter = ISO8601DateFormatter()
-        let lastUpdatedString = lastUpdated != nil ? dateFormatter.string(from: lastUpdated!) : nil
+    public func didChangeATTStatus(oldStatus: Int, newStatus: Int, lastUpdated: Date?) {
+        let lastUpdatedString: String?
+        if let date = lastUpdated {
+            let formatter = ISO8601DateFormatter()
+            lastUpdatedString = formatter.string(from: date)
+        } else {
+            lastUpdatedString = nil
+        }
 
-        let arguments: [String: Any?] = [
+        let arguments: [String: Any] = [
             "oldStatus": oldStatus,
             "newStatus": newStatus,
-            "lastUpdated": lastUpdatedString
+            "lastUpdated": lastUpdatedString as Any
         ]
         self.channel?.invokeMethod("didChangeATTStatus", arguments: arguments)
     }
@@ -292,11 +299,11 @@ extension CMPManagerService: CMPManagerDelegate {
     }
 
     public func didReceiveConsent(consent: String, jsonObject: [String : Any]) {
-        let arguments: [String: Any] = [
+        let safeJsonObject = convertDateValues(jsonObject)
+        channel?.invokeMethod("didReceiveConsent", arguments: [
             "consent": consent,
-            "jsonObject": jsonObject
-        ]
-        self.channel?.invokeMethod("didReceiveError", arguments: arguments)
+            "jsonObject": safeJsonObject
+        ])
     }
 
     public func didShowConsentLayer() {
@@ -306,4 +313,40 @@ extension CMPManagerService: CMPManagerDelegate {
     public func didCloseConsentLayer() {
         self.channel?.invokeMethod("didCloseConsentLayer", arguments: nil)
     }
+}
+
+extension Date {
+    func toISOString() -> String {
+        let formatter = ISO8601DateFormatter()
+        return formatter.string(from: self)
+    }
+}
+
+private func convertDateValues(_ dict: [String: Any]) -> [String: Any] {
+    var result: [String: Any] = [:]
+    for (key, value) in dict {
+        if let date = value as? Date {
+            result[key] = date.toISOString()
+        } else if let nestedDict = value as? [String: Any] {
+            result[key] = convertDateValues(nestedDict)
+        } else if let array = value as? [Any] {
+            result[key] = array.map { item -> Any in
+                if let date = item as? Date {
+                    return date.toISOString()
+                }
+                if let dict = item as? [String: Any] {
+                    return convertDateValues(dict)
+                }
+                return item
+            }
+        } else {
+            result[key] = value
+        }
+    }
+    return result
+}
+
+private func handleCallbackResponse(_ response: [String: Any], completion: @escaping (Result<[String: Any], Error>) -> Void) {
+    let safeResponse = convertDateValues(response)
+    completion(.success(safeResponse))
 }
