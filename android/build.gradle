@@ -50,7 +50,7 @@ android {
     }
 
     dependencies {
-        implementation 'net.consentmanager.sdkv3:cmsdkv3:3.1.0'
+        implementation 'net.consentmanager.sdkv3:cmsdkv3:3.1.1'
         implementation "org.jetbrains.kotlinx:kotlinx-serialization-json"
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.10.0'

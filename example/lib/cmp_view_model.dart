@@ -9,24 +9,25 @@ class CmpViewModel extends ChangeNotifier {
   late CMPmanager _cmpSdkPlugin;
   String _callbackLogs = '';
 
-  CmpViewModel._internal() {
-    _cmpSdkPlugin = CMPmanager.instance;
-  }
+  CmpViewModel._internal();
 
   Future<void> initCmp() async {
     try {
-      await _cmpSdkPlugin.setUrlConfig(
+      _cmpSdkPlugin = CMPmanager.instance;
+
+      await CMPmanager.instance.setUrlConfig(
         appName: "CMDemoAppFlutter",
         id: "26cba6cf81e76",
         language: "EN",
         domain: "delivery.consentmanager.net",
       );
+
       _addEventListeners();
       await _cmpSdkPlugin.checkAndOpen();
+
     } catch (e) {
-      if (kDebugMode) {
-        print("Error initializing CMP: $e");
-      }
+      _logCallback('Initialization error: $e');
+      rethrow;
     }
   }
 

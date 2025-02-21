@@ -163,7 +163,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       case 'didReceiveConsent':
         final args = call.arguments as Map<dynamic, dynamic>;
         final consent = args['consent'] as String;
-        final jsonObject = args['jsonObject'] as Map<String, dynamic>;
+        final jsonObject = Map<String, dynamic>.from(args['jsonObject'] as Map);
         didReceiveConsent?.call(consent, jsonObject);
         break;
       case 'didReceiveError':
@@ -285,8 +285,57 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   @override
   Future<UserConsentStatus> getUserStatus() async {
-    final result = await methodChannel.invokeMethod<Map<dynamic, dynamic>>('getUserStatus');
-    return UserConsentStatus.fromJson(Map<String, dynamic>.from(result!));
+    try {
+      final result = await methodChannel.invokeMethod<Map<dynamic, dynamic>>('getUserStatus');
+      print('Raw getUserStatus response: $result');
+
+      final vendors = (result?['vendors'] as Map<dynamic, dynamic>?)?.map(
+            (key, value) => MapEntry(key.toString(), _parseConsentStatus(value)),
+      ) ?? {};
+
+      final purposes = (result?['purposes'] as Map<dynamic, dynamic>?)?.map(
+            (key, value) => MapEntry(key.toString(), _parseConsentStatus(value)),
+      ) ?? {};
+
+      return UserConsentStatus(
+        hasUserChoice: _parseUserChoiceStatus(result?['hasUserChoice']),
+        vendors: vendors,
+        purposes: purposes,
+        tcf: result?['tcf']?.toString() ?? '',
+        addtlConsent: result?['addtlConsent']?.toString() ?? '',
+        regulation: result?['regulation']?.toString() ?? '',
+      );
+    } catch (e) {
+      throw Exception('Failed to get user status: $e');
+    }
+  }
+
+  ConsentStatus _parseConsentStatus(dynamic value) {
+    if (value is int && value >= 0 && value < ConsentStatus.values.length) {
+      return ConsentStatus.values[value];
+    }
+    if (value is String) {
+      switch(value.toLowerCase()) {
+        case 'granted': return ConsentStatus.granted;
+        case 'denied': return ConsentStatus.denied;
+        default: return ConsentStatus.choiceDoesntExist;
+      }
+    }
+    return ConsentStatus.choiceDoesntExist;
+  }
+
+  UserChoiceStatus _parseUserChoiceStatus(dynamic value) {
+    if (value is int && value >= 0 && value < UserChoiceStatus.values.length) {
+      return UserChoiceStatus.values[value];
+    }
+    if (value is String) {
+      switch(value.toLowerCase()) {
+        case 'choiceexists': return UserChoiceStatus.choiceExists;
+        case 'requiresupdate': return UserChoiceStatus.requiresUpdate;
+        default: return UserChoiceStatus.choiceDoesntExist;
+      }
+    }
+    return UserChoiceStatus.choiceDoesntExist;
   }
 
   @override

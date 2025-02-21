@@ -149,8 +149,8 @@ class ConsentLayerUIConfigCardState extends State<ConsentLayerUIConfigCard> {
             ElevatedButton(
               onPressed: _currentConfig != null
                   ? () {
-                      widget.onSubmit(_currentConfig!); // Submit the config
-                    }
+                widget.onSubmit(_currentConfig!); // Submit the config
+              }
                   : null, // Disable button if no config
               child: const Text('Submit Configuration'),
             ),
@@ -178,9 +178,9 @@ class ConsentLayerUIConfigCardState extends State<ConsentLayerUIConfigCard> {
             onChanged: onChanged,
             items: items
                 .map((T item) => DropdownMenuItem<T>(
-                      value: item,
-                      child: Text(item.toString().split('.').last),
-                    ))
+              value: item,
+              child: Text(item.toString().split('.').last),
+            ))
                 .toList(),
           ),
         ),
@@ -249,7 +249,7 @@ class ConsentLayerUIConfigCardState extends State<ConsentLayerUIConfigCard> {
                 Colors.yellow.shade100,
               ];
               final nextColor =
-                  colors[(colors.indexOf(currentColor) + 1) % colors.length];
+              colors[(colors.indexOf(currentColor) + 1) % colors.length];
               onColorChanged(nextColor);
             },
             child: Container(

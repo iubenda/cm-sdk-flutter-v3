@@ -8,7 +8,9 @@ typedef DidChangeATTStatus = void Function(
     int oldStatus, int newStatus, DateTime lastUpdated);
 typedef DidReceiveError = void Function(String error);
 typedef DidReceiveConsent = void Function(
-    String consent, Map<String, dynamic> jsonObject);
+    String consent,
+    Map<String, dynamic> jsonObject
+    );
 typedef DidShowConsentLayer = void Function();
 typedef DidCloseConsentLayer = void Function();
 
@@ -43,18 +45,24 @@ class UserConsentStatus {
     required this.regulation,
   });
 
-  factory UserConsentStatus.fromJson(Map<String, dynamic> json) {
+  factory UserConsentStatus.fromJson(Map<dynamic, dynamic> json) {
     return UserConsentStatus(
       hasUserChoice: UserChoiceStatus.values[json['hasUserChoice'] as int],
-      vendors: (json['vendors'] as Map<String, dynamic>).map(
-            (key, value) => MapEntry(key, ConsentStatus.values[value as int]),
+      vendors: (json['vendors'] as Map<dynamic, dynamic>).map(
+            (key, value) => MapEntry(
+          key.toString(),
+          ConsentStatus.values[value as int],
+        ),
       ),
-      purposes: (json['purposes'] as Map<String, dynamic>).map(
-            (key, value) => MapEntry(key, ConsentStatus.values[value as int]),
+      purposes: (json['purposes'] as Map<dynamic, dynamic>).map(
+            (key, value) => MapEntry(
+          key.toString(),
+          ConsentStatus.values[value as int],
+        ),
       ),
-      tcf: json['tcf'] as String,
-      addtlConsent: json['addtlConsent'] as String,
-      regulation: json['regulation'] as String,
+      tcf: json['tcf']?.toString() ?? '',
+      addtlConsent: json['addtlConsent']?.toString() ?? '',
+      regulation: json['regulation']?.toString() ?? '',
     );
   }
 }

@@ -1,6 +1,7 @@
-import 'package:cmp_sdk_example/cmp_view_model.dart';
+// main.dart
+import 'package:cmp_sdk_v3/cmp_sdk_v3_platform_interface.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:cmp_sdk_v3/cmp_sdk_v3.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,102 +12,156 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: CmpViewModel.instance,
-      child: MaterialApp(
-        title: 'CMP Demo App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: const HomeScreen(),
+    return MaterialApp(
+      title: 'CMP SDK Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
       ),
+      home: const MyHomePage(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class _MyHomePageState extends State<MyHomePage> {
+  final CMPmanager _cmpManager = CMPmanager.instance;
+  String _lastAction = '';
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      CmpViewModel.instance.initCmp();
-    });
+    _initializeCMP();
   }
 
-  Widget _buildButton(String text, Color color, VoidCallback onPressed) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            padding: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          child: Text(text, style: const TextStyle(color: Colors.white)),
-        ),
-      ),
-    );
+  Future<void> _initializeCMP() async {
+    try {
+      await _cmpManager.setUrlConfig(
+        id: "26cba6cf81e76",
+        domain: "delivery.consentmanager.net",
+        appName: "CMDemoAppFlutter",
+        language: "EN",
+      );
+
+      _cmpManager.addEventListeners(
+        didReceiveConsent: (consent, jsonObject) {
+          setState(() => _lastAction = 'Received consent: $consent');
+        },
+        didShowConsentLayer: () {
+          setState(() => _lastAction = 'Consent layer shown');
+        },
+        didCloseConsentLayer: () {
+          setState(() => _lastAction = 'Consent layer closed');
+        },
+        didReceiveError: (error) {
+          setState(() => _lastAction = 'Error: $error');
+        },
+      );
+    } catch (e) {
+      setState(() => _lastAction = 'Initialization error: $e');
+    }
+  }
+
+  String _formatUserStatus(UserConsentStatus status) {
+    return '''
+User Choice: ${status.hasUserChoice}
+TCF: ${status.tcf}
+Additional Consent: ${status.addtlConsent}
+Regulation: ${status.regulation}
+Vendors: ${status.vendors.entries.map((e) => '${e.key}: ${e.value}').join(', ')}
+Purposes: ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join(', ')}
+''';
+  }
+
+  Future<void> _handleApiCall(Future<dynamic> Function() apiCall, String actionName) async {
+    try {
+      final result = await apiCall();
+      setState(() {
+        if (result is UserConsentStatus) {
+          _lastAction = '$actionName:\n${_formatUserStatus(result)}';
+        } else if (result is Map) {
+          _lastAction = '$actionName: ${result.toString()}';
+        } else {
+          _lastAction = '$actionName: ${result.toString()}';
+        }
+      });
+    } catch (e) {
+      setState(() => _lastAction = '$actionName error: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CM Flutter DemoApp'),
+        title: const Text('CMP SDK Demo'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildButton('Get User Status', Colors.blue,
-                    () => CmpViewModel.instance.getUserStatus()),
-            _buildButton('Get CMP String', Colors.teal,
-                    () => CmpViewModel.instance.exportCMPInfo()),
-            _buildButton('Status for Purpose c53', const Color(0xFF3CB371),
-                    () => CmpViewModel.instance.getPurposeStatus()),
-            _buildButton('Enable Purposes c52 and c53', const Color(0xFF3CB371),
-                    () => CmpViewModel.instance.enablePurposes()),
-            _buildButton('Disable Purposes c52 and c53', Colors.red,
-                    () => CmpViewModel.instance.disablePurposes()),
-            _buildButton('Status for Vendor ID s2789', Colors.cyan,
-                    () => CmpViewModel.instance.getVendorStatus()),
-            _buildButton('Enable Vendors s2790 and s2791', Colors.cyan,
-                    () => CmpViewModel.instance.enableVendors()),
-            _buildButton('Disable Vendors s2790 and s2791', Colors.red,
-                    () => CmpViewModel.instance.disableVendors()),
-            _buildButton('Reject All', Colors.red,
-                    () => CmpViewModel.instance.rejectAll()),
-            _buildButton('Accept All', Colors.green,
-                    () => CmpViewModel.instance.acceptAll()),
-            _buildButton('Check and Open Consent Layer', Colors.indigo,
-                    () => CmpViewModel.instance.checkAndOpen()),
-            _buildButton('Open Consent Layer', Colors.indigo,
-                    () => CmpViewModel.instance.forceOpen()),
-            _buildButton('Get Google Consent Mode', Colors.indigo,
-                    () => CmpViewModel.instance.getGoogleConsentStatus()),
-            _buildButton('Jump to CMP Settings', Colors.indigo,
-                    () => CmpViewModel.instance.jumpToSettings()),
-            _buildButton('Import CMP String', Colors.teal,
-                    () => CmpViewModel.instance.importCMPString()),
-            _buildButton('Reset all CMP Info', Colors.black,
-                    () => CmpViewModel.instance.resetConsent()),
-            _buildButton('Request ATT Authorization', Colors.purple,
-                    () => CmpViewModel.instance.requestATTPermission()),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Last Action:\n$_lastAction',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildButton('Open Consent Layer',
+                    () => _handleApiCall(() => _cmpManager.forceOpen(), 'Force Open')),
+            _buildButton('Check and Open',
+                    () => _handleApiCall(() => _cmpManager.checkAndOpen(), 'Check and Open')),
+            _buildButton('Jump to Settings',
+                    () => _handleApiCall(() => _cmpManager.forceOpen(jumpToSettings: true), 'Jump to Settings')),
+            _buildButton('Accept All',
+                    () => _handleApiCall(() => _cmpManager.acceptAll(), 'Accept All')),
+            _buildButton('Reject All',
+                    () => _handleApiCall(() => _cmpManager.rejectAll(), 'Reject All')),
+            _buildButton('Export CMP Info',
+                    () => _handleApiCall(() => _cmpManager.exportCMPInfo(), 'Export CMP Info')),
+            _buildButton('Get User Status',
+                    () => _handleApiCall(() => _cmpManager.getUserStatus(), 'User Status')),
+            _buildButton('Reset Data',
+                    () => _handleApiCall(() => _cmpManager.resetConsentManagementData(), 'Reset Data')),
+            _buildButton('Get Google Consent Mode',
+                    () => _handleApiCall(() => _cmpManager.getGoogleConsentModeStatus(), 'Google Consent Mode')),
+            _buildButton('Check Vendor: s2789',
+                    () => _handleApiCall(() => _cmpManager.getStatusForVendor('s2789'), 'Vendor s2789')),
+            _buildButton('Check Purpose: c53',
+                    () => _handleApiCall(() => _cmpManager.getStatusForPurpose('c53'), 'Purpose c53')),
+            _buildButton('Accept Vendors s2790,s2791',
+                    () => _handleApiCall(() => _cmpManager.acceptVendors(['s2790', 's2791']), 'Accept Vendors')),
+            _buildButton('Reject Vendors s2790,s2791',
+                    () => _handleApiCall(() => _cmpManager.rejectVendors(['s2790', 's2791']), 'Reject Vendors')),
+            _buildButton('Accept Purposes c52,c53',
+                    () => _handleApiCall(() => _cmpManager.acceptPurposes(['c52', 'c53']), 'Accept Purposes')),
+            _buildButton('Reject Purposes c52,c53',
+                    () => _handleApiCall(() => _cmpManager.rejectPurposes(['c52', 'c53']), 'Reject Purposes')),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildButton(String text, VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        child: Text(text),
       ),
     );
   }

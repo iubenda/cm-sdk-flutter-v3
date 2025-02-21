@@ -11,7 +11,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlinx.serialization.json.JsonObject
 import net.consentmanager.cm_sdk_android_v3.CMPManager
 import net.consentmanager.cm_sdk_android_v3.CMPManagerDelegate
 import net.consentmanager.cm_sdk_android_v3.ConsentLayerUIConfig
@@ -415,10 +414,10 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         channel.invokeMethod("didReceiveError", arguments)
     }
 
-    override fun didReceiveConsent(consent: String, jsonObject: JsonObject) {
-        val arguments = mapOf(
+    override fun didReceiveConsent(consent: String, jsonObject: Map<String, Any>) {
+        val arguments: Map<String, Any> = mapOf(
             "consent" to consent,
-            "jsonObject" to jsonObject.toString()
+            "jsonObject" to jsonObject
         )
         channel.invokeMethod("didReceiveConsent", arguments)
     }
