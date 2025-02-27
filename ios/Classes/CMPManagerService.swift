@@ -166,18 +166,6 @@ class CMPManagerService: NSObject {
         }
     }
 
-    func requestATTPermission(completion: @escaping (Int) -> Void) {
-        if #available(iOS 14, *) {
-            DispatchQueue.main.async {
-                self.cmpManager?.requestATTAuthorization { status in
-                    completion(status.rawValue)
-                }
-            }
-        } else {
-            completion(0)
-        }
-    }
-
     func getATTAuthorizationStatus() -> Int {
         if #available(iOS 14, *) {
             return self.cmpManager?.getATTAuthorizationStatus().rawValue ?? 0

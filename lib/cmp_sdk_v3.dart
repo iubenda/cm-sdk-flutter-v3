@@ -194,16 +194,6 @@ class CMPmanager {
     return CmpSdkPlatform.instance.acceptPurposes(purposes);
   }
 
-  /// Request ATT Permission (iOS only)
-  Future<void> requestATTPermission() {
-    if (Platform.isIOS) {
-      return CmpSdkPlatform.instance.requestATTPermission();
-    } else {
-      // For non-iOS platforms, return an immediately completed future.
-      return Future.value();
-    }
-  }
-
   /// Get the current ATT Authorization Status (iOS only)
   Future<ATTStatus> getATTAuthorizationStatus() async {
     if (Platform.isIOS) {

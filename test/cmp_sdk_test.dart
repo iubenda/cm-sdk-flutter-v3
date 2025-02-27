@@ -134,11 +134,6 @@ class MockCmpSdkPlatform
   }
 
   @override
-  Future<void> requestATTPermission() {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> resetConsentManagementData() {
     throw UnimplementedError();
   }

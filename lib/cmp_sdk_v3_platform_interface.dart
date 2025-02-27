@@ -177,7 +177,6 @@ abstract class CmpSdkPlatform extends PlatformInterface {
   Future<String?> exportCMPInfo();
 
   Future<void> resetConsentManagementData();
-  Future<void> requestATTPermission();
   Future<ATTStatus> getATTAuthorizationStatus();
 
   Future<UserConsentStatus> getUserStatus();

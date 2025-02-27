@@ -6,10 +6,8 @@ PODS:
   - Flutter (1.0.0)
   - fluttertoast (0.0.2):
     - Flutter
-    - Toast
   - integration_test (0.0.1):
     - Flutter
-  - Toast (4.1.1)
 
 DEPENDENCIES:
   - cmp_sdk_v3 (from `.symlinks/plugins/cmp_sdk_v3/ios`)
@@ -20,7 +18,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - cm-sdk-ios-v3
-    - Toast
 
 EXTERNAL SOURCES:
   cmp_sdk_v3:
@@ -36,9 +33,8 @@ SPEC CHECKSUMS:
   cm-sdk-ios-v3: 5a6522b2b505516ee75c9a6a0b3590fd04b58e8a
   cmp_sdk_v3: b31ee3e883ff9ef2786a0b3f9c1bf3ea03e041da
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  fluttertoast: 76fea30fcf04176325f6864c87306927bd7d2038
-  integration_test: d5929033778cc4991a187e4e1a85396fa4f59b3a
-  Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
+  fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
 
 PODFILE CHECKSUM: 9c46fd01abff66081b39f5fa5767b3f1d0b11d76
 

@@ -15,6 +15,7 @@ import net.consentmanager.cm_sdk_android_v3.CMPManager
 import net.consentmanager.cm_sdk_android_v3.CMPManagerDelegate
 import net.consentmanager.cm_sdk_android_v3.ConsentLayerUIConfig
 import net.consentmanager.cm_sdk_android_v3.UrlConfig
+import net.consentmanager.cm_sdk_android_v3.ConsentStatus
 
 class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManagerDelegate {
 
@@ -323,14 +324,34 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     private fun getUserStatus(result: Result) {
         try {
             val status = cmpManager?.getUserStatus()
+            Log.d("Raw User Status: ", "$status")
+
+            // Convert vendor and purpose statuses to integer indices
+            val convertedVendors = status?.vendors?.mapValues {
+                when(it.value) {
+                    ConsentStatus.GRANTED -> 0
+                    ConsentStatus.DENIED -> 1
+                    else -> 2  // choiceDoesntExist
+                }
+            } ?: emptyMap()
+
+            val convertedPurposes = status?.purposes?.mapValues {
+                when(it.value) {
+                    ConsentStatus.GRANTED -> 0
+                    ConsentStatus.DENIED -> 1
+                    else -> 2  // choiceDoesntExist
+                }
+            } ?: emptyMap()
+
             val statusMap = mapOf(
                 "hasUserChoice" to (status?.hasUserChoice?.ordinal ?: 2), // 2 = choiceDoesntExist
-                "vendors" to (status?.vendors ?: emptyMap()),
-                "purposes" to (status?.purposes ?: emptyMap()),
+                "vendors" to convertedVendors,
+                "purposes" to convertedPurposes,
                 "tcf" to (status?.tcf ?: ""),
                 "addtlConsent" to (status?.addtlConsent ?: ""),
                 "regulation" to (status?.regulation ?: "")
             )
+            Log.d("User Status Map: ", "$statusMap")
             result.success(statusMap)
         } catch (e: Exception) {
             result.error("USER_STATUS_ERROR", "Failed to get user status: ${e.toString()}", null)

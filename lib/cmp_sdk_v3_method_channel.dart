@@ -208,12 +208,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
     await methodChannel.invokeMethod('rejectAll');
   }
 
-  /// request ATTPermission
-  @override
-  Future<void> requestATTPermission() async {
-    await methodChannel.invokeMethod('requestATTPermission');
-  }
-
   @override
   Future<void> acceptPurposes(List<String> purposes,
       {bool updateVendors = true}) async {
@@ -286,8 +280,9 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<UserConsentStatus> getUserStatus() async {
     try {
+      print('Entered method channel');
       final result = await methodChannel.invokeMethod<Map<dynamic, dynamic>>('getUserStatus');
-      print('Raw getUserStatus response: $result');
+      print('Raw getUserStatus response from method channel: $result');
 
       final vendors = (result?['vendors'] as Map<dynamic, dynamic>?)?.map(
             (key, value) => MapEntry(key.toString(), _parseConsentStatus(value)),
@@ -306,14 +301,18 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
         regulation: result?['regulation']?.toString() ?? '',
       );
     } catch (e) {
+      print(e);
       throw Exception('Failed to get user status: $e');
     }
   }
 
   ConsentStatus _parseConsentStatus(dynamic value) {
+    // Handle integer value (proper enum ordinal)
     if (value is int && value >= 0 && value < ConsentStatus.values.length) {
       return ConsentStatus.values[value];
     }
+
+    // Handle string value (enum name)
     if (value is String) {
       switch(value.toLowerCase()) {
         case 'granted': return ConsentStatus.granted;
@@ -321,13 +320,19 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
         default: return ConsentStatus.choiceDoesntExist;
       }
     }
+
+    print('Unknown consent status format: $value (${value.runtimeType})');
+    // Default fallback
     return ConsentStatus.choiceDoesntExist;
   }
 
   UserChoiceStatus _parseUserChoiceStatus(dynamic value) {
+    // Handle integer value
     if (value is int && value >= 0 && value < UserChoiceStatus.values.length) {
       return UserChoiceStatus.values[value];
     }
+
+    // Handle string value
     if (value is String) {
       switch(value.toLowerCase()) {
         case 'choiceexists': return UserChoiceStatus.choiceExists;
@@ -335,6 +340,9 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
         default: return UserChoiceStatus.choiceDoesntExist;
       }
     }
+
+    print('Unknown user choice status format: $value (${value.runtimeType})');
+    // Default fallback
     return UserChoiceStatus.choiceDoesntExist;
   }
 

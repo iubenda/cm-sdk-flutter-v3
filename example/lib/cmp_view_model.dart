@@ -208,14 +208,4 @@ ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join('\n')}
       Fluttertoast.showToast(msg: 'Error resetting consents: $e');
     }
   }
-
-  Future<void> requestATTPermission() async {
-    try {
-      await _cmpSdkPlugin.requestATTPermission();
-      final status = await _cmpSdkPlugin.getATTAuthorizationStatus();
-      Fluttertoast.showToast(msg: 'ATT Status: ${status.name}');
-    } catch (e) {
-      Fluttertoast.showToast(msg: 'Error requesting ATT permission: $e');
-    }
-  }
 }
