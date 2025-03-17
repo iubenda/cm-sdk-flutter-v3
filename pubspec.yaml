@@ -1,6 +1,6 @@
 name: cmp_sdk_v3
 description: "The CMP Plugin allows you to integrate Consent Management functionality."
-version: 3.1.0
+version: 3.2.0
 homepage: "https://cwww.onsentmanager.net"
 
 environment:

@@ -43,7 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _initializeCMP() async {
     try {
       await _cmpManager.setUrlConfig(
-        id: "719197d2c212c",
+        id: "26cba6cf81e76",
         domain: "delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",
