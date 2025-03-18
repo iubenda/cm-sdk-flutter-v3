@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'cmp_sdk_v3_platform_interface.dart';
+import 'cm_cmp_sdk_v3_platform_interface.dart';
 import 'consent_layer_ui_config.dart';
 import 'constants/ios/att_status.dart';
 
@@ -192,16 +192,6 @@ class CMPmanager {
   /// Accepts the given purposes.
   Future<void> acceptPurposes(List<String> purposes) {
     return CmpSdkPlatform.instance.acceptPurposes(purposes);
-  }
-
-  /// Get the current ATT Authorization Status (iOS only)
-  Future<ATTStatus> getATTAuthorizationStatus() async {
-    if (Platform.isIOS) {
-      return await CmpSdkPlatform.instance.getATTAuthorizationStatus();
-    } else {
-      // For non-iOS platforms, return a default status (notDetermined)
-      return Future.value(ATTStatus.notDetermined);
-    }
   }
 
   /// Returns the current user consent status including all vendors and purposes

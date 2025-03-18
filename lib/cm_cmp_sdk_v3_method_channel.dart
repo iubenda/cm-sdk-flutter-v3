@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'cmp_sdk_v3_platform_interface.dart';
+import 'cm_cmp_sdk_v3_platform_interface.dart';
 import 'consent_layer_ui_config.dart';
 import 'constants/ios/att_status.dart';
 
@@ -9,7 +9,7 @@ import 'constants/ios/att_status.dart';
 /// through Flutter method channels for managing consent.
 class MethodChannelCmpSdk extends CmpSdkPlatform {
   @visibleForTesting
-  final methodChannel = const MethodChannel('cmp_sdk_v3');
+  final methodChannel = const MethodChannel('cm_cmp_sdk_v3');
 
   // Callbacks for various consent events.
   DidShowConsentLayer? didShowConsentLayer;
@@ -236,12 +236,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @Deprecated('Use checkAndOpen() instead')
   Future<bool> checkIfConsentIsRequired() async {
     return await methodChannel.invokeMethod('checkIfConsentIsRequired');
-  }
-
-  @override
-  Future<ATTStatus> getATTAuthorizationStatus() async {
-    var status = await methodChannel.invokeMethod('getATTAuthorizationStatus');
-    return mapATTStatus(status);
   }
 
   @override

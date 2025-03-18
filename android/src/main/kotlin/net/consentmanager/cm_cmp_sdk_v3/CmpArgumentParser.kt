@@ -1,4 +1,4 @@
-package net.consentmanager.cmp_sdk_v3
+package net.consentmanager.cm_cmp_sdk_v3
 import android.graphics.Color
 import net.consentmanager.cm_sdk_android_v3.ConsentLayerUIConfig
 import net.consentmanager.cm_sdk_android_v3.UrlConfig

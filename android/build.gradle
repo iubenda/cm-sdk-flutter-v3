@@ -1,4 +1,4 @@
-group 'net.consentmanager.cmp_sdk_v3'
+group 'net.consentmanager.cm_cmp_sdk_v3'
 version '3.0.0'
 
 buildscript {
@@ -28,7 +28,7 @@ apply plugin: 'kotlin-android'
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'net.consentmanager.cmp_sdk_v3'
+        namespace 'net.consentmanager.cm_cmp_sdk_v3'
     }
 
     compileSdkVersion 34

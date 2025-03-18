@@ -1,4 +1,4 @@
-package net.consentmanager.cmp_sdk_v3
+package net.consentmanager.cm_cmp_sdk_v3
 
 import android.util.Log
 import android.app.Activity
@@ -33,7 +33,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
 
     // FlutterPlugin interface implementation
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(binding.binaryMessenger, "cmp_sdk_v3")
+        channel = MethodChannel(binding.binaryMessenger, "cm_cmp_sdk_v3")
         channel.setMethodCallHandler(this)
     }
 

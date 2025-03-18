@@ -166,15 +166,7 @@ class CMPManagerService: NSObject {
         }
     }
 
-    func getATTAuthorizationStatus() -> Int {
-        if #available(iOS 14, *) {
-            return self.cmpManager?.getATTAuthorizationStatus().rawValue ?? 0
-        }
-        return 0
-    }
-
         // MARK: - New Methods (v3.1.0+)
-
 
         func getStatusForPurpose(purposeId: String) -> BridgeConsentStatus {
             guard let status = cmpManager?.getStatusForPurpose(id: purposeId) else {

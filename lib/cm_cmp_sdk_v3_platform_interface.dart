@@ -1,6 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'cmp_sdk_v3_method_channel.dart';
+import 'cm_cmp_sdk_v3_method_channel.dart';
 import 'consent_layer_ui_config.dart';
 import 'constants/ios/att_status.dart';
 
@@ -177,7 +177,6 @@ abstract class CmpSdkPlatform extends PlatformInterface {
   Future<String?> exportCMPInfo();
 
   Future<void> resetConsentManagementData();
-  Future<ATTStatus> getATTAuthorizationStatus();
 
   Future<UserConsentStatus> getUserStatus();
   Future<ConsentStatus> getStatusForPurpose(String id);

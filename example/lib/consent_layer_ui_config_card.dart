@@ -1,5 +1,5 @@
-import 'package:cmp_sdk_v3/consent_layer_ui_config.dart';
-import 'package:cmp_sdk_v3/constants/constants.dart';
+import 'package:cm_cmp_sdk_v3/consent_layer_ui_config.dart';
+import 'package:cm_cmp_sdk_v3/constants/constants.dart';
 import 'package:flutter/material.dart';
 
 class ConsentLayerUIConfigCard extends StatefulWidget {

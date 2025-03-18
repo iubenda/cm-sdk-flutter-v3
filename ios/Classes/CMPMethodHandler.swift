@@ -62,8 +62,6 @@ class CMPMethodHandler {
             acceptVendors(call: call, result: result)
         case "rejectVendors":
             rejectVendors(call: call, result: result)
-        case "getATTAuthorizationStatus":
-            getATTAuthorizationStatus(result: result)
         case "checkAndOpen":
             checkAndOpen(call: call, result: result)
         case "forceOpen":
@@ -377,10 +375,5 @@ class CMPMethodHandler {
                 result(true)
             }
         }
-    }
-
-    private func getATTAuthorizationStatus(result: @escaping FlutterResult) {
-        let status = cmpManagerService?.getATTAuthorizationStatus()
-        result(status)
     }
 }

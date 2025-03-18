@@ -1,4 +1,4 @@
-# cmp_sdk_v3
+# cm_cmp_sdk_v3
 
 A Flutter plugin for integrating and managing consent management platform (CMP) functionalities within your Flutter application. The `cmp_sdk` provides a simple and efficient way to handle user consents for data collection and usage in compliance with privacy laws like GDPR.
 

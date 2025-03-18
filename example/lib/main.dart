@@ -1,7 +1,7 @@
 // main.dart
-import 'package:cmp_sdk_v3/cmp_sdk_v3_platform_interface.dart';
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_platform_interface.dart';
 import 'package:flutter/material.dart';
-import 'package:cmp_sdk_v3/cmp_sdk_v3.dart';
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
 
 void main() {
   runApp(const MyApp());

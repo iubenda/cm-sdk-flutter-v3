@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:cmp_sdk_v3/cmp_sdk_v3.dart';
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class CmpViewModel extends ChangeNotifier {

@@ -1,7 +1,7 @@
+import 'package:cmp_sdk_example/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:cmp_sdk_v3/cmp_sdk_v3.dart';
-import 'package:cmp_sdk_example/main.dart';
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

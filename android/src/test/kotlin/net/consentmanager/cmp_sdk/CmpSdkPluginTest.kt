@@ -1,4 +1,4 @@
-package net.consentmanager.cmp_sdk_v3
+package net.consentmanager.cm_cmp_sdk_v3
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
