@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'cm_cmp_sdk_v3_platform_interface.dart';
 import 'consent_layer_ui_config.dart';
-import 'constants/ios/att_status.dart';
 
 /// A Dart class providing access to CMP SDK functionalities.
 class CMPmanager {

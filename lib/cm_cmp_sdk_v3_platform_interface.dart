@@ -2,7 +2,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'cm_cmp_sdk_v3_method_channel.dart';
 import 'consent_layer_ui_config.dart';
-import 'constants/ios/att_status.dart';
 
 typedef DidChangeATTStatus = void Function(
     int oldStatus, int newStatus, DateTime lastUpdated);

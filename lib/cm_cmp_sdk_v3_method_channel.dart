@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'cm_cmp_sdk_v3_platform_interface.dart';
 import 'consent_layer_ui_config.dart';
-import 'constants/ios/att_status.dart';
 
 /// An implementation of [CmpSdkPlatform] that communicates with native code
 /// through Flutter method channels for managing consent.

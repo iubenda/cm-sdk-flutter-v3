@@ -1,7 +1,6 @@
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_method_channel.dart';
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_platform_interface.dart';
 import 'package:cm_cmp_sdk_v3/consent_layer_ui_config.dart';
-import 'package:cm_cmp_sdk_v3/constants/ios/att_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
