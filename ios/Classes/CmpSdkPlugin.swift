@@ -9,7 +9,7 @@ public class CmpSdkPlugin: NSObject, FlutterPlugin {
     var channel: FlutterMethodChannel?
 
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "cmp_sdk_v3", binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(name: "cm_cmp_sdk_v3", binaryMessenger: registrar.messenger())
         let instance = CmpSdkPlugin()
         instance.channel = channel
         instance.setupServices(channel: channel)

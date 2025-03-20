@@ -1,18 +1,16 @@
 PODS:
-  - cm-sdk-ios-v3 (3.0.0)
-  - cmp_sdk_v3 (0.2.0):
-    - cm-sdk-ios-v3 (= 3.0.0)
+  - cm-sdk-ios-v3 (3.2.0)
+  - cm_cmp_sdk_v3 (3.2.0):
+    - cm-sdk-ios-v3 (= 3.2.0)
     - Flutter
   - Flutter (1.0.0)
   - fluttertoast (0.0.2):
     - Flutter
-    - Toast
   - integration_test (0.0.1):
     - Flutter
-  - Toast (4.1.1)
 
 DEPENDENCIES:
-  - cmp_sdk_v3 (from `.symlinks/plugins/cmp_sdk_v3/ios`)
+  - cm_cmp_sdk_v3 (from `.symlinks/plugins/cm_cmp_sdk_v3/ios`)
   - Flutter (from `Flutter`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
@@ -20,11 +18,10 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - cm-sdk-ios-v3
-    - Toast
 
 EXTERNAL SOURCES:
-  cmp_sdk_v3:
-    :path: ".symlinks/plugins/cmp_sdk_v3/ios"
+  cm_cmp_sdk_v3:
+    :path: ".symlinks/plugins/cm_cmp_sdk_v3/ios"
   Flutter:
     :path: Flutter
   fluttertoast:
@@ -33,13 +30,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  cm-sdk-ios-v3: 4dbf5375dd64f0a2e60bb10b4697efb771c8c643
-  cmp_sdk_v3: 9c6d63f4e38b0b44b1e7f67c3c73433f65380c7c
+  cm-sdk-ios-v3: bb8049c902fbed62ff05b93cf0f4a82465921a4f
+  cm_cmp_sdk_v3: d6b29400c15eec191ea1e736ffb7c05a2840c853
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  fluttertoast: e9a18c7be5413da53898f660530c56f35edfba9c
-  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
-  Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
+  fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
 
-PODFILE CHECKSUM: a57f30d18f102dd3ce366b1d62a55ecbef2158e5
+PODFILE CHECKSUM: 9c46fd01abff66081b39f5fa5767b3f1d0b11d76
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

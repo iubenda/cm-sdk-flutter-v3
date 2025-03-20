@@ -1,7 +1,6 @@
-import 'package:cmp_sdk_v3/cmp_sdk_v3_method_channel.dart';
-import 'package:cmp_sdk_v3/cmp_sdk_v3_platform_interface.dart';
-import 'package:cmp_sdk_v3/consent_layer_ui_config.dart';
-import 'package:cmp_sdk_v3/constants/ios/att_status.dart';
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_method_channel.dart';
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_platform_interface.dart';
+import 'package:cm_cmp_sdk_v3/consent_layer_ui_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -44,11 +43,6 @@ class MockCmpSdkPlatform
 
   @override
   Future<String?> exportCMPInfo() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<ATTStatus> getATTAuthorizationStatus() {
     throw UnimplementedError();
   }
 
@@ -134,11 +128,6 @@ class MockCmpSdkPlatform
   }
 
   @override
-  Future<void> requestATTPermission() {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> resetConsentManagementData() {
     throw UnimplementedError();
   }
@@ -154,6 +143,48 @@ class MockCmpSdkPlatform
 
   @override
   Future<void> setWebViewConfig(ConsentLayerUIConfig config) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> checkAndOpen({bool jumpToSettings = false}) {
+    // TODO: implement checkAndOpen
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> forceOpen({bool jumpToSettings = false}) {
+    // TODO: implement forceOpen
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, String>> getGoogleConsentModeStatus() {
+    // TODO: implement getGoogleConsentModeStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ConsentStatus> getStatusForPurpose(String id) {
+    // TODO: implement getStatusForPurpose
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ConsentStatus> getStatusForVendor(String id) {
+    // TODO: implement getStatusForVendor
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<UserConsentStatus> getUserStatus() {
+    // TODO: implement getUserStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) {
+    // TODO: implement setOnClickLinkCallback
     throw UnimplementedError();
   }
 }

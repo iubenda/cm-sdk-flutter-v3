@@ -1,8 +1,5 @@
-import 'dart:io';
-
-import 'cmp_sdk_v3_platform_interface.dart';
+import 'cm_cmp_sdk_v3_platform_interface.dart';
 import 'consent_layer_ui_config.dart';
-import 'constants/ios/att_status.dart';
 
 /// A Dart class providing access to CMP SDK functionalities.
 class CMPmanager {
@@ -47,21 +44,25 @@ class CMPmanager {
   /// Opens the consent layer if consent check is required.
   ///
   /// This method checks if user consent is required and, if so, opens the consent layer UI.
+  @Deprecated('Use checkAndOpen() instead')
   Future<void> checkWithServerAndOpenIfNecessary() {
     return CmpSdkPlatform.instance.checkWithServerAndOpenIfNecessary();
   }
 
   // Check if consent is required. True when the user needs to give consent
+  @Deprecated('Use checkAndOpen() instead')
   Future<bool> checkIfConsentIsRequired() {
     return CmpSdkPlatform.instance.checkIfConsentIsRequired();
   }
 
   /// Directly opens the consent layer UI without checking if consent is required.
+  @Deprecated('Use forceOpen() instead')
   Future<void> openConsentLayer() {
     return CmpSdkPlatform.instance.openConsentLayer();
   }
 
   /// Directly opens the consent layer with the settings page
+  @Deprecated('Use forceOpen() with the jumpToSettings parameters instead')
   Future<void> jumpToSettings() {
     return CmpSdkPlatform.instance.jumpToSettings();
   }
@@ -69,6 +70,7 @@ class CMPmanager {
   /// Checks if the user has given consent for a specific vendor.
   ///
   /// [id] - The unique identifier for the vendor.
+  @Deprecated('Use getStatusForVendor() instead')
   Future<bool> hasVendorConsent(String id, {bool defaultReturn = true}) {
     return CmpSdkPlatform.instance
         .hasVendorConsent(id, defaultReturn: defaultReturn);
@@ -77,6 +79,7 @@ class CMPmanager {
   /// Checks if the user has given consent for a specific purpose.
   ///
   /// [id] - The unique identifier for the purpose.
+  @Deprecated('Use getStatusForPurpose() instead')
   Future<bool> hasPurposeConsent(String id, {bool defaultReturn = true}) {
     return CmpSdkPlatform.instance
         .hasPurposeConsent(id, defaultReturn: defaultReturn);
@@ -93,36 +96,43 @@ class CMPmanager {
   }
 
   /// Retrieves a list of all vendors registered with the CMP.
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getAllVendorsIDs() {
     return CmpSdkPlatform.instance.getAllVendorsIDs();
   }
 
   /// Retrieves a list of all purposes registered with the CMP.
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getAllPurposesIDs() {
     return CmpSdkPlatform.instance.getAllPurposesIDs();
   }
 
   /// Checks if the user has given general consent.
+  @Deprecated('Use getUserStatus() instead')
   Future<bool> hasUserChoice() {
     return CmpSdkPlatform.instance.hasUserChoice();
   }
 
   /// Retrieves a list of purposes for which the user has given consent.
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getEnabledPurposesIDs() {
     return CmpSdkPlatform.instance.getEnabledPurposesIDs();
   }
 
   /// Retrieves a list of vendors for which the user has given consent.
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getEnabledVendorsIDs() {
     return CmpSdkPlatform.instance.getEnabledVendorsIDs();
   }
 
   /// Retrieves a list of purposes for which the user has not given consent.
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getDisabledPurposesIDs() {
     return CmpSdkPlatform.instance.getDisabledPurposesIDs();
   }
 
   /// Retrieves a list of vendors for which the user has not given consent.
+  @Deprecated('Use getUserStatus() instead')
   Future<List<dynamic>> getDisabledVendorsIDs() {
     return CmpSdkPlatform.instance.getDisabledVendorsIDs();
   }
@@ -181,23 +191,39 @@ class CMPmanager {
     return CmpSdkPlatform.instance.acceptPurposes(purposes);
   }
 
-  /// Request ATT Permission (iOS only)
-  Future<void> requestATTPermission() {
-    if (Platform.isIOS) {
-      return CmpSdkPlatform.instance.requestATTPermission();
-    } else {
-      // For non-iOS platforms, return an immediately completed future.
-      return Future.value();
-    }
+  /// Returns the current user consent status including all vendors and purposes
+  Future<UserConsentStatus> getUserStatus() {
+    return CmpSdkPlatform.instance.getUserStatus();
   }
 
-  /// Get the current ATT Authorization Status (iOS only)
-  Future<ATTStatus> getATTAuthorizationStatus() async {
-    if (Platform.isIOS) {
-      return await CmpSdkPlatform.instance.getATTAuthorizationStatus();
-    } else {
-      // For non-iOS platforms, return a default status (notDetermined)
-      return Future.value(ATTStatus.notDetermined);
-    }
+  /// Returns the consent status for a specific purpose
+  Future<ConsentStatus> getStatusForPurpose(String id) {
+    return CmpSdkPlatform.instance.getStatusForPurpose(id);
+  }
+
+  /// Returns the consent status for a specific vendor
+  Future<ConsentStatus> getStatusForVendor(String id) {
+    return CmpSdkPlatform.instance.getStatusForVendor(id);
+  }
+
+  /// Returns the Google Consent Mode v2 settings map
+  Future<Map<String, String>> getGoogleConsentModeStatus() {
+    return CmpSdkPlatform.instance.getGoogleConsentModeStatus();
+  }
+
+  /// Sets a callback to handle URL clicks in the consent layer
+  /// Return true if the URL was handled, false to let the SDK handle it
+  void setOnClickLinkCallback(OnClickLinkCallback? callback) {
+    CmpSdkPlatform.instance.setOnClickLinkCallback(callback);
+  }
+
+  /// Force opens the consent layer UI.
+  Future<void> forceOpen({bool jumpToSettings = false}) {
+    return CmpSdkPlatform.instance.forceOpen(jumpToSettings: jumpToSettings);
+  }
+
+  /// Checks consent and opens the layer if necessary.
+  Future<void> checkAndOpen({bool jumpToSettings = false}) {
+    return CmpSdkPlatform.instance.checkAndOpen(jumpToSettings: jumpToSettings);
   }
 }

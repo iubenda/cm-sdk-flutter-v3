@@ -1,12 +1,7 @@
-import 'package:cmp_sdk_example/widgets/consent_layer_ui_config_card.dart';
-import 'package:cmp_sdk_v3/consent_layer_ui_config.dart';
+// main.dart
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_platform_interface.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'viewmodels/cmp_view_model.dart';
-import 'views/config_section.dart';
-import 'views/action_buttons.dart';
-import 'views/status_section.dart';
-import 'views/logs_section.dart';
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,88 +12,156 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => CmpViewModel()),
-      ],
-      child: const MaterialApp(
-        home: HomeScreen(),
+    return MaterialApp(
+      title: 'CMP SDK Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
       ),
+      home: const MyHomePage(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class _MyHomePageState extends State<MyHomePage> {
+  final CMPmanager _cmpManager = CMPmanager.instance;
+  String _lastAction = '';
+
   @override
   void initState() {
     super.initState();
-    // Calling initCmp() after the widget is initialized
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CmpViewModel>(context, listen: false).initCmp();
-    });
+    _initializeCMP();
   }
 
-  // Function to show the UI Config Card in a modal
-  void _showConfigModal(BuildContext context) {
-    final viewModel = Provider.of<CmpViewModel>(context, listen: false);
+  Future<void> _initializeCMP() async {
+    try {
+      await _cmpManager.setUrlConfig(
+        id: "26cba6cf81e76",
+        domain: "delivery.consentmanager.net",
+        appName: "CMDemoAppFlutter",
+        language: "EN",
+      );
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: FractionallySizedBox(
-            heightFactor: 0.7, // Adjust the modal height if necessary
-            child: ConsentLayerUIConfigCard(
-              onConfigChanged: (ConsentLayerUIConfig config) {
-                setState(() {});
-              },
-              onSubmit: (ConsentLayerUIConfig config) {
-                viewModel.setWebViewConfig(config);
-                Navigator.of(context).pop(); // Close the modal on submit
-              },
-            ),
-          ),
-        );
-      },
-    );
+      _cmpManager.addEventListeners(
+        didReceiveConsent: (consent, jsonObject) {
+          setState(() => _lastAction = 'Received consent: $consent');
+        },
+        didShowConsentLayer: () {
+          setState(() => _lastAction = 'Consent layer shown');
+        },
+        didCloseConsentLayer: () {
+          setState(() => _lastAction = 'Consent layer closed');
+        },
+        didReceiveError: (error) {
+          setState(() => _lastAction = 'Error: $error');
+        },
+      );
+    } catch (e) {
+      setState(() => _lastAction = 'Initialization error: $e');
+    }
+  }
+
+  String _formatUserStatus(UserConsentStatus status) {
+    return '''
+User Choice: ${status.hasUserChoice}
+TCF: ${status.tcf}
+Additional Consent: ${status.addtlConsent}
+Regulation: ${status.regulation}
+Vendors: ${status.vendors.entries.map((e) => '${e.key}: ${e.value}').join(', ')}
+Purposes: ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join(', ')}
+''';
+  }
+
+  Future<void> _handleApiCall(Future<dynamic> Function() apiCall, String actionName) async {
+    try {
+      final result = await apiCall();
+      setState(() {
+        if (result is UserConsentStatus) {
+          _lastAction = '$actionName:\n${_formatUserStatus(result)}';
+        } else if (result is Map) {
+          _lastAction = '$actionName: ${result.toString()}';
+        } else {
+          _lastAction = '$actionName: ${result.toString()}';
+        }
+      });
+    } catch (e) {
+      setState(() => _lastAction = '$actionName error: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<CmpViewModel>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CMP SDK V3 App'),
+        title: const Text('CMP SDK Demo'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ConfigSection(),
-            SizedBox(height: 24.0),
-            ActionButtons(),
-            SizedBox(height: 24.0),
-            StatusSection(),
-            SizedBox(height: 24.0),
-            LogsSection(),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Last Action:\n$_lastAction',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildButton('Open Consent Layer',
+                    () => _handleApiCall(() => _cmpManager.forceOpen(), 'Force Open')),
+            _buildButton('Check and Open',
+                    () => _handleApiCall(() => _cmpManager.checkAndOpen(), 'Check and Open')),
+            _buildButton('Jump to Settings',
+                    () => _handleApiCall(() => _cmpManager.forceOpen(jumpToSettings: true), 'Jump to Settings')),
+            _buildButton('Accept All',
+                    () => _handleApiCall(() => _cmpManager.acceptAll(), 'Accept All')),
+            _buildButton('Reject All',
+                    () => _handleApiCall(() => _cmpManager.rejectAll(), 'Reject All')),
+            _buildButton('Export CMP Info',
+                    () => _handleApiCall(() => _cmpManager.exportCMPInfo(), 'Export CMP Info')),
+            _buildButton('Get User Status',
+                    () => _handleApiCall(() => _cmpManager.getUserStatus(), 'User Status')),
+            _buildButton('Reset Data',
+                    () => _handleApiCall(() => _cmpManager.resetConsentManagementData(), 'Reset Data')),
+            _buildButton('Get Google Consent Mode',
+                    () => _handleApiCall(() => _cmpManager.getGoogleConsentModeStatus(), 'Google Consent Mode')),
+            _buildButton('Check Vendor: s2789',
+                    () => _handleApiCall(() => _cmpManager.getStatusForVendor('s2789'), 'Vendor s2789')),
+            _buildButton('Check Purpose: c53',
+                    () => _handleApiCall(() => _cmpManager.getStatusForPurpose('c53'), 'Purpose c53')),
+            _buildButton('Accept Vendors s2790,s2791',
+                    () => _handleApiCall(() => _cmpManager.acceptVendors(['s2790', 's2791']), 'Accept Vendors')),
+            _buildButton('Reject Vendors s2790,s2791',
+                    () => _handleApiCall(() => _cmpManager.rejectVendors(['s2790', 's2791']), 'Reject Vendors')),
+            _buildButton('Accept Purposes c52,c53',
+                    () => _handleApiCall(() => _cmpManager.acceptPurposes(['c52', 'c53']), 'Accept Purposes')),
+            _buildButton('Reject Purposes c52,c53',
+                    () => _handleApiCall(() => _cmpManager.rejectPurposes(['c52', 'c53']), 'Reject Purposes')),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showConfigModal(context), // Show the settings modal
-        child: const Icon(Icons.settings), // Settings icon for the button
+    );
+  }
+
+  Widget _buildButton(String text, VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        child: Text(text),
       ),
     );
   }

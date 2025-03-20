@@ -2,6 +2,17 @@ import Flutter
 import cm_sdk_ios_v3
 import UIKit
 
+public enum ConsentStatus: Int {
+    case granted = 0
+    case denied = 1
+    case choiceDoesntExist = 2
+}
+
+public enum UserChoiceStatus: Int {
+    case choiceExists = 0
+    case requiresUpdate = 1
+    case choiceDoesntExist = 2
+}
 class CMPManagerService: NSObject {
 
     var cmpManager: CMPManager?
@@ -26,12 +37,14 @@ class CMPManagerService: NSObject {
         self.cmpManager?.setUrlConfig(config)
     }
 
+    @available(*, deprecated, message: "Use checkAndOpen() instead")
     func checkWithServerAndOpenIfNecessary(completion: @escaping (String?) -> Void) {
         self.cmpManager?.checkWithServerAndOpenIfNecessary { error in
             completion(error?.localizedDescription)
         }
     }
 
+    @available(*, deprecated, message: "Use forceOpen() instead")
     func openConsentLayer(completion: @escaping (String?) -> Void) {
         DispatchQueue.main.async {
             self.cmpManager?.openConsentLayer { error in
@@ -40,6 +53,7 @@ class CMPManagerService: NSObject {
         }
     }
 
+    @available(*, deprecated, message: "Use forceOpen() instead")
     func jumpToSettings(completion: @escaping (String?) -> Void) {
         DispatchQueue.main.async {
             self.cmpManager?.jumpToSettings { error in
@@ -48,16 +62,19 @@ class CMPManagerService: NSObject {
         }
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func checkIfConsentIsRequired(completion: @escaping (Bool) -> Void) {
         self.cmpManager?.checkIfConsentIsRequired { isRequired in
             completion(isRequired)
         }
     }
 
+    @available(*, deprecated, message: "Use getStatusForVendor() instead")
     func hasVendorConsent(vendorId: String) -> Bool {
         return self.cmpManager?.hasVendorConsent(id: vendorId) ?? false
     }
 
+    @available(*, deprecated, message: "Use getStatusForPurpose() instead")
     func hasPurposeConsent(purposeId: String) -> Bool {
         return self.cmpManager?.hasPurposeConsent(id: purposeId) ?? false
     }
@@ -72,30 +89,37 @@ class CMPManagerService: NSObject {
         }
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func getAllVendorsIDs() -> [String]? {
         return self.cmpManager?.getAllVendorsIDs()
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func getAllPurposesIDs() -> [String]? {
         return self.cmpManager?.getAllPurposesIDs()
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func hasUserChoice() -> Bool {
         return self.cmpManager?.hasUserChoice() ?? false
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func getEnabledPurposesIDs() -> [String]? {
         return self.cmpManager?.getEnabledPurposesIDs()
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func getEnabledVendorsIDs() -> [String]? {
         return self.cmpManager?.getEnabledVendorsIDs()
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func getDisabledPurposesIDs() -> [String]? {
         return self.cmpManager?.getDisabledPurposesIDs()
     }
 
+    @available(*, deprecated, message: "Use getUserStatus() instead")
     func getDisabledVendorsIDs() -> [String]? {
         return self.cmpManager?.getDisabledVendorsIDs()
     }
@@ -142,35 +166,109 @@ class CMPManagerService: NSObject {
         }
     }
 
-    func requestATTPermission(completion: @escaping (Int) -> Void) {
-        if #available(iOS 14, *) {
-            DispatchQueue.main.async {
-                self.cmpManager?.requestATTAuthorization { status in
-                    completion(status.rawValue)
-                }
-            }
-        } else {
-            completion(0)
-        }
-    }
+        // MARK: - New Methods (v3.1.0+)
 
-    func getATTAuthorizationStatus() -> Int {
-        if #available(iOS 14, *) {
-            return self.cmpManager?.getATTAuthorizationStatus().rawValue ?? 0
+        func getStatusForPurpose(purposeId: String) -> BridgeConsentStatus {
+            guard let status = cmpManager?.getStatusForPurpose(id: purposeId) else {
+                return .choiceDoesntExist
+            }
+            return mapToConsentStatus(status)
         }
-        return 0
-    }
+
+        func getStatusForVendor(vendorId: String) -> BridgeConsentStatus {
+            guard let status = cmpManager?.getStatusForVendor(id: vendorId) else {
+                return .choiceDoesntExist
+            }
+            return mapToConsentStatus(status)
+        }
+
+        func getUserStatus() -> [String: Any] {
+            guard let response = cmpManager?.getUserStatus() else {
+                return createEmptyUserStatus()
+            }
+
+            var statusDict: [String: Any] = [
+                "hasUserChoice": mapChoiceStatus(response.status),
+                "vendors": response.vendors,
+                "purposes": response.purposes,
+                "tcf": response.tcf,
+                "addtlConsent": response.addtlConsent,
+                "regulation": response.regulation
+            ]
+
+            return convertDateValues(statusDict)
+        }
+
+        func getGoogleConsentModeStatus() -> [String: String] {
+            return cmpManager?.getGoogleConsentModeStatus() ?? [:]
+        }
+
+        // MARK: - Updated Methods
+
+        func checkAndOpen(jumpToSettings: Bool = false, completion: @escaping (String?) -> Void) {
+            cmpManager?.checkAndOpen(jumpToSettings: jumpToSettings) { error in
+                completion(error?.localizedDescription)
+            }
+        }
+
+        func forceOpen(jumpToSettings: Bool = false, completion: @escaping (String?) -> Void) {
+            cmpManager?.forceOpen(jumpToSettings: jumpToSettings) { error in
+                completion(error?.localizedDescription)
+            }
+        }
+
+        // MARK: - Helper Methods
+
+        private func createEmptyUserStatus() -> [String: Any] {
+            return [
+                "hasUserChoice": "choiceDoesntExist",
+                "vendors": [:],
+                "purposes": [:],
+                "tcf": "",
+                "addtlConsent": "",
+                "regulation": ""
+            ]
+        }
+
+        private func mapToConsentStatus(_ status: UniqueConsentStatus) -> BridgeConsentStatus {
+            switch status {
+            case .granted:
+                return .granted
+            case .denied:
+                return .denied
+            case .choiceDoesntExist:
+                return .choiceDoesntExist
+            @unknown default:
+                return .choiceDoesntExist
+            }
+        }
+
+        private func mapChoiceStatus(_ status: String) -> Int {
+            switch status {
+            case "choiceExists":
+                return BridgeUserChoiceStatus.choiceExists.rawValue
+            case "requiresUpdate":
+                return BridgeUserChoiceStatus.requiresUpdate.rawValue
+            default:
+                return BridgeUserChoiceStatus.choiceDoesntExist.rawValue
+            }
+        }
 }
 
 extension CMPManagerService: CMPManagerDelegate {
- public func didChangeATTStatus(oldStatus: Int, newStatus: Int, lastUpdated: Date?) {
-        let dateFormatter = ISO8601DateFormatter()
-        let lastUpdatedString = lastUpdated != nil ? dateFormatter.string(from: lastUpdated!) : nil
+    public func didChangeATTStatus(oldStatus: Int, newStatus: Int, lastUpdated: Date?) {
+        let lastUpdatedString: String?
+        if let date = lastUpdated {
+            let formatter = ISO8601DateFormatter()
+            lastUpdatedString = formatter.string(from: date)
+        } else {
+            lastUpdatedString = nil
+        }
 
-        let arguments: [String: Any?] = [
+        let arguments: [String: Any] = [
             "oldStatus": oldStatus,
             "newStatus": newStatus,
-            "lastUpdated": lastUpdatedString
+            "lastUpdated": lastUpdatedString as Any
         ]
         self.channel?.invokeMethod("didChangeATTStatus", arguments: arguments)
     }
@@ -181,11 +279,11 @@ extension CMPManagerService: CMPManagerDelegate {
     }
 
     public func didReceiveConsent(consent: String, jsonObject: [String : Any]) {
-        let arguments: [String: Any] = [
+        let safeJsonObject = convertDateValues(jsonObject)
+        channel?.invokeMethod("didReceiveConsent", arguments: [
             "consent": consent,
-            "jsonObject": jsonObject
-        ]
-        self.channel?.invokeMethod("didReceiveError", arguments: arguments)
+            "jsonObject": safeJsonObject
+        ])
     }
 
     public func didShowConsentLayer() {
@@ -195,4 +293,40 @@ extension CMPManagerService: CMPManagerDelegate {
     public func didCloseConsentLayer() {
         self.channel?.invokeMethod("didCloseConsentLayer", arguments: nil)
     }
+}
+
+extension Date {
+    func toISOString() -> String {
+        let formatter = ISO8601DateFormatter()
+        return formatter.string(from: self)
+    }
+}
+
+private func convertDateValues(_ dict: [String: Any]) -> [String: Any] {
+    var result: [String: Any] = [:]
+    for (key, value) in dict {
+        if let date = value as? Date {
+            result[key] = date.toISOString()
+        } else if let nestedDict = value as? [String: Any] {
+            result[key] = convertDateValues(nestedDict)
+        } else if let array = value as? [Any] {
+            result[key] = array.map { item -> Any in
+                if let date = item as? Date {
+                    return date.toISOString()
+                }
+                if let dict = item as? [String: Any] {
+                    return convertDateValues(dict)
+                }
+                return item
+            }
+        } else {
+            result[key] = value
+        }
+    }
+    return result
+}
+
+private func handleCallbackResponse(_ response: [String: Any], completion: @escaping (Result<[String: Any], Error>) -> Void) {
+    let safeResponse = convertDateValues(response)
+    completion(.success(safeResponse))
 }
