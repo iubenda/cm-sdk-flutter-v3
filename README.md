@@ -12,11 +12,11 @@ A Flutter plugin for integrating and managing consent management platform (CMP) 
 
 ## Installation
 
-To use the `cmp_sdk` plugin, add it to your `pubspec.yaml` file:
+To use the `cm_cmp_sdk_v3` plugin, add it to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  cmp_sdk: ^3.2.0
+  cm_cmp_sdk_v3: ^3.2.1
 ```
 
 Then, run the following command to install the plugin:
