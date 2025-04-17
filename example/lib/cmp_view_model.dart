@@ -17,7 +17,7 @@ class CmpViewModel extends ChangeNotifier {
 
       await CMPmanager.instance.setUrlConfig(
         appName: "CMDemoAppFlutter",
-        id: "26cba6cf81e76",
+        id: "719197d2c212c",
         language: "EN",
         domain: "delivery.consentmanager.net",
       );

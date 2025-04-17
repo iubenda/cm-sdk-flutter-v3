@@ -273,9 +273,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<UserConsentStatus> getUserStatus() async {
     try {
-      print('Entered method channel');
       final result = await methodChannel.invokeMethod<Map<dynamic, dynamic>>('getUserStatus');
-      print('Raw getUserStatus response from method channel: $result');
 
       final vendors = (result?['vendors'] as Map<dynamic, dynamic>?)?.map(
             (key, value) => MapEntry(key.toString(), _parseConsentStatus(value)),
@@ -294,7 +292,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
         regulation: result?['regulation']?.toString() ?? '',
       );
     } catch (e) {
-      print(e);
       throw Exception('Failed to get user status: $e');
     }
   }
@@ -314,7 +311,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       }
     }
 
-    print('Unknown consent status format: $value (${value.runtimeType})');
     // Default fallback
     return ConsentStatus.choiceDoesntExist;
   }
@@ -334,8 +330,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       }
     }
 
-    print('Unknown user choice status format: $value (${value.runtimeType})');
-    // Default fallback
     return UserChoiceStatus.choiceDoesntExist;
   }
 
