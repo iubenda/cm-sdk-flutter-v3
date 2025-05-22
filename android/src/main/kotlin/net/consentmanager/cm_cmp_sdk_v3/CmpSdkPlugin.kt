@@ -396,17 +396,11 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     private fun checkAndOpen(call: MethodCall, result: Result) {
         val jumpToSettings = call.argument<Boolean>("jumpToSettings") ?: false
         val handler = Handler(Looper.getMainLooper())
-        handler.post {
-            try {
-                cmpManager?.checkAndOpen(jumpToSettings) { error ->
-                    if (error != null) {
-                        result.error("CHECK_AND_OPEN_ERROR", error.toString(), null)
-                    } else {
-                        result.success(null)
-                    }
-                }
-            } catch (e: Exception) {
-                result.error("CHECK_AND_OPEN_ERROR", "Failed to check and open: ${e.toString()}", null)
+        cmpManager?.checkAndOpen(jumpToSettings) { kotlinResult ->
+            kotlinResult.onSuccess {
+                result.success(true)  // Return true instead of Unit/null for success
+            }.onFailure { error ->
+                result.error("CHECK_AND_OPEN_ERROR", error.message, null)
             }
         }
     }

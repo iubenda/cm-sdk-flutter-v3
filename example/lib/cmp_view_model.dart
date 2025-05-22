@@ -6,16 +6,16 @@ class CmpViewModel extends ChangeNotifier {
   static final CmpViewModel _instance = CmpViewModel._internal();
   static CmpViewModel get instance => _instance;
 
-  late CMPmanager _cmpSdkPlugin;
+  late CMPManager _cmpSdkPlugin;
   String _callbackLogs = '';
 
   CmpViewModel._internal();
 
   Future<void> initCmp() async {
     try {
-      _cmpSdkPlugin = CMPmanager.instance;
+      _cmpSdkPlugin = CMPManager.instance;
 
-      await CMPmanager.instance.setUrlConfig(
+      await CMPManager.instance.setUrlConfig(
         appName: "CMDemoAppFlutter",
         id: "26cba6cf81e76",
         language: "EN",

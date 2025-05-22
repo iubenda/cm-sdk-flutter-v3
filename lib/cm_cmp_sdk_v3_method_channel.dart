@@ -259,13 +259,13 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   // Methods added on v3.1.0
   @override
-  Future<void> forceOpen({bool jumpToSettings = false}) async {
-    await methodChannel.invokeMethod('forceOpen', {'jumpToSettings': jumpToSettings});
+  Future<void> forceOpen({bool jumpToSettings = false}) {
+    return methodChannel.invokeMethod('forceOpen', {'jumpToSettings': jumpToSettings});
   }
 
   @override
-  Future<void> checkAndOpen({bool jumpToSettings = false}) async {
-    await methodChannel.invokeMethod('checkAndOpen', {'jumpToSettings': jumpToSettings});
+  Future<void> checkAndOpen({bool jumpToSettings = false}) {
+    return methodChannel.invokeMethod('checkAndOpen', {'jumpToSettings': jumpToSettings});
   }
 
   OnClickLinkCallback? _onClickLinkCallback;

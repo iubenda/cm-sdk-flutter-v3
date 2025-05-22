@@ -17,6 +17,7 @@ class CMPManagerService: NSObject {
 
     var cmpManager: CMPManager?
     var channel: FlutterMethodChannel?
+    var urlConfig: UrlConfig?
 
     init(channel: FlutterMethodChannel) {
             super.init()
@@ -27,6 +28,9 @@ class CMPManagerService: NSObject {
         self.cmpManager = CMPManager.shared
         self.cmpManager?.setPresentingViewController(viewController)
         self.cmpManager?.delegate = self
+        if let urlConfig = self.urlConfig {
+            self.cmpManager?.setUrlConfig(urlConfig)
+        }
     }
 
     func setWebViewConfig(config: ConsentLayerUIConfig) {
@@ -34,7 +38,10 @@ class CMPManagerService: NSObject {
     }
 
     func setUrlConfig(config: UrlConfig) {
-        self.cmpManager?.setUrlConfig(config)
+        self.urlConfig = config
+        if let cmpManager = self.cmpManager {
+            cmpManager.setUrlConfig(config)
+        }
     }
 
     @available(*, deprecated, message: "Use checkAndOpen() instead")

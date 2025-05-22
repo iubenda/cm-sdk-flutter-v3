@@ -31,7 +31,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final CMPmanager _cmpManager = CMPmanager.instance;
+  final CMPManager _cmpManager = CMPManager.instance;
   String _lastAction = '';
 
   @override
@@ -43,7 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _initializeCMP() async {
     try {
       await _cmpManager.setUrlConfig(
-        id: "26cba6cf81e76",
+        id: "719197d2c212c",
         domain: "delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",

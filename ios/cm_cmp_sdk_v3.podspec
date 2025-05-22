@@ -15,7 +15,7 @@ The consentmanager (CMP) Flutter Plugin allows you to easily integrate Consent M
   s.source_files = 'Classes/**/*'
   s.vendored_frameworks = 'Frameworks/cm_sdk_ios_v3.xcframework'
   s.dependency 'Flutter'
-  s.platform = :ios, '15.0'
+  s.platform = :ios, '13.0'
   s.dependency "cm-sdk-ios-v3", "3.2.0"
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

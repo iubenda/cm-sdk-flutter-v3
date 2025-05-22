@@ -1,39 +1,38 @@
+import 'cm_cmp_sdk_v3_method_channel.dart';
 import 'cm_cmp_sdk_v3_platform_interface.dart';
 import 'consent_layer_ui_config.dart';
 
 /// A Dart class providing access to CMP SDK functionalities.
-class CMPmanager {
+class CMPManager {
   // The single instance of CmpSdk
-  static final CMPmanager _instance = CMPmanager._internal();
-
-  // A boolean to track if initialization has occurred
+  static final CMPManager _instance = CMPManager._internal();
+  static CMPManager get instance => _instance;
+  final _methodChannel = MethodChannelCmpSdk();
   static bool _isInitialized = false;
 
-  // Private named constructor to prevent external instantiation.
-  CMPmanager._internal() {
-    _initializeOnce();
-  }
+  CMPManager._internal();
 
-  // The public static accessor for the singleton instance
-  static CMPmanager get instance => _instance;
-
-  /// Ensures that CmpSdkPlatform.instance.initialize() is called only once.
-  void _initializeOnce() {
-    if (!_isInitialized) {
-      CmpSdkPlatform.instance.initialize();
-      _isInitialized = true;
-    }
-  }
-
-  /// set the Url Config
+  /// Set the URL configuration and initialize the SDK
   Future<void> setUrlConfig({
     required String id,
     required String domain,
     required String appName,
     required String language,
   }) async {
-    await CmpSdkPlatform.instance.setUrlConfig(
-        id: id, domain: domain, appName: appName, language: language);
+    // First set URL config
+    await _methodChannel.setUrlConfig(
+      id: id,
+      domain: domain,
+      appName: appName,
+      language: language,
+    );
+
+    // Then initialize if not already done
+    if (!_isInitialized) {
+      await _methodChannel.initialize();
+      _isInitialized = true;
+      _methodChannel.checkAndOpen();
+    }
   }
 
   /// set the WebView configuration

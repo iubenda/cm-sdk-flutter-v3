@@ -7,7 +7,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   // Instance of your CmpSdk plugin
-  final CMPmanager cmpSdkPlugin = CMPmanager.instance;
+  final CMPManager cmpSdkPlugin = CMPManager.instance;
   const String testId = "b43fcc03b1a67";
   const String testDomain = "delivery.consentmanager.net";
   const String testAppName = "TestApp";
@@ -27,7 +27,7 @@ void main() {
     // Initialize the CMP SDK
     testWidgets('CMP SDK Initialization', (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
-      CMPmanager.instance.setUrlConfig(
+      CMPManager.instance.setUrlConfig(
           id: testId,
           domain: testDomain,
           appName: testAppName,
