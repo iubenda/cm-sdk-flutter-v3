@@ -136,7 +136,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
     this.didReceiveConsent = didReceiveConsent;
     this.didReceiveError = didReceiveError;
 
-    // Notify native side to set up callbacks
     methodChannel.setMethodCallHandler(_handleMethodCall);
   }
 
@@ -278,12 +277,10 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   }
 
   ConsentStatus _parseConsentStatus(dynamic value) {
-    // Handle integer value (proper enum ordinal)
     if (value is int && value >= 0 && value < ConsentStatus.values.length) {
       return ConsentStatus.values[value];
     }
 
-    // Handle string value (enum name)
     if (value is String) {
       switch(value.toLowerCase()) {
         case 'granted': return ConsentStatus.granted;
@@ -292,17 +289,14 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       }
     }
 
-    // Default fallback
     return ConsentStatus.choiceDoesntExist;
   }
 
   UserChoiceStatus _parseUserChoiceStatus(dynamic value) {
-    // Handle integer value
     if (value is int && value >= 0 && value < UserChoiceStatus.values.length) {
       return UserChoiceStatus.values[value];
     }
 
-    // Handle string value
     if (value is String) {
       switch(value.toLowerCase()) {
         case 'choiceexists': return UserChoiceStatus.choiceExists;
@@ -335,7 +329,12 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) async {
     _onClickLinkCallback = callback;
-    // Register platform channel method handler if not already done
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      await methodChannel.invokeMethod('setOnClickLinkCallback');
+      return;
+    }
+
     if (callback != null) {
       methodChannel.setMethodCallHandler((call) async {
         if (call.method == 'onClickLink') {

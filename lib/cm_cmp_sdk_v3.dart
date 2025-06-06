@@ -19,13 +19,14 @@ class CMPManager {
     required String appName,
     required String language,
   }) async {
-    // First set URL config
     await _methodChannel.setUrlConfig(
       id: id,
       domain: domain,
       appName: appName,
       language: language,
     );
+
+    await _methodChannel.setOnClickLinkCallback(null);
 
     // Then initialize if not already done
     if (!_isInitialized) {
@@ -48,7 +49,6 @@ class CMPManager {
     return CmpSdkPlatform.instance.checkWithServerAndOpenIfNecessary();
   }
 
-  // Check if consent is required. True when the user needs to give consent
   @Deprecated('Use checkAndOpen() instead')
   Future<bool> checkIfConsentIsRequired() {
     return CmpSdkPlatform.instance.checkIfConsentIsRequired();

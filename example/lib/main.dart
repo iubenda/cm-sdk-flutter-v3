@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _initializeCMP() async {
     try {
       final ConsentLayerUIConfig webviewConfig = ConsentLayerUIConfig(
-        position: CmpPosition.halfScreenTop,
+        position: CmpPosition.fullScreen,
       );
       await CMPManager.instance.setWebViewConfig(webviewConfig);
       await _cmpManager.setUrlConfig(

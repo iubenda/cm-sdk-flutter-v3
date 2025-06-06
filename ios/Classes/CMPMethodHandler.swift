@@ -72,6 +72,8 @@ class CMPMethodHandler {
             getStatusForVendor(call: call, result: result)
         case "getGoogleConsentModeStatus":
             getGoogleConsentModeStatus(result: result)
+        case "setOnClickLinkCallback":
+            setOnClickLinkCallback(call: call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -363,5 +365,13 @@ class CMPMethodHandler {
                 result(true)
             }
         }
+    }
+
+    private func setOnClickLinkCallback(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        NSLog("iOS: setOnClickLinkCallback called - using native WebView behavior")
+        NSLog("iOS: External links will attempt to open within the consent WebView")
+        NSLog("iOS: This is a limitation of the native iOS SDK architecture")
+
+        result("iOS: Native WebView link handling active")
     }
 }
