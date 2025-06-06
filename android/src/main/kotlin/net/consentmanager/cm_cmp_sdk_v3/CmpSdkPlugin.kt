@@ -21,7 +21,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
 
     private lateinit var channel: MethodChannel
     private var cmpManager: CMPManager? = null
-    private var urlConfig: UrlConfig? = null  // Change to nullable
+    private var urlConfig: UrlConfig? = null
     private var webViewConfig: ConsentLayerUIConfig = ConsentLayerUIConfig(
         position = ConsentLayerUIConfig.Position.FULL_SCREEN,
         cornerRadius = 0f,
@@ -43,7 +43,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activityContext = binding.activity
-        if (urlConfig != null) {  // Initialize if config was set before activity
+        if (urlConfig != null) {
             initializeCMPManager()
         }
     }
@@ -102,10 +102,10 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName")
 
         urlConfig = UrlConfig(id, domain, language, appName)
-        cmpManager = null  // Clear existing instance
+        cmpManager = null
 
         try {
-            if (activityContext != null) {  // Only initialize if activity is ready
+            if (activityContext != null) {
                 initializeCMPManager()
             }
             result.success(null)
@@ -125,15 +125,6 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             } catch (e: Exception) {
                 result.error("CONSENT_LAYER_ERROR", "Failed to open consent layer: ${e.toString()}", null)
             }
-        }
-    }
-
-    private fun jumpToSettings(result: Result) {
-        try {
-            // TODO No Function
-            result.success(null)
-        } catch (e: Exception) {
-            result.error("SETTINGS_ERROR", "Failed to open settings: ${e.toString()}", null)
         }
     }
 
@@ -326,7 +317,6 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             val status = cmpManager?.getUserStatus()
             Log.d("Raw User Status: ", "$status")
 
-            // Convert vendor and purpose statuses to integer indices
             val convertedVendors = status?.vendors?.mapValues {
                 when(it.value) {
                     ConsentStatus.GRANTED -> 0
@@ -396,11 +386,13 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     private fun checkAndOpen(call: MethodCall, result: Result) {
         val jumpToSettings = call.argument<Boolean>("jumpToSettings") ?: false
         val handler = Handler(Looper.getMainLooper())
-        cmpManager?.checkAndOpen(jumpToSettings) { kotlinResult ->
-            kotlinResult.onSuccess {
-                result.success(true)  // Return true instead of Unit/null for success
-            }.onFailure { error ->
-                result.error("CHECK_AND_OPEN_ERROR", error.message, null)
+        handler.post {
+            cmpManager?.checkAndOpen(jumpToSettings) { kotlinResult ->
+                kotlinResult.onSuccess {
+                    result.success(true)
+                }.onFailure { error ->
+                    result.error("CHECK_AND_OPEN_ERROR", error.message, null)
+                }
             }
         }
     }
@@ -409,21 +401,17 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         val jumpToSettings = call.argument<Boolean>("jumpToSettings") ?: false
         val handler = Handler(Looper.getMainLooper())
         handler.post {
-            try {
-                cmpManager?.forceOpen(jumpToSettings) { error ->
-                    if (error != null) {
-                        result.error("FORCE_OPEN_ERROR", error.toString(), null)
-                    } else {
-                        result.success(null)
-                    }
+            cmpManager?.forceOpen(jumpToSettings) { kotlinResult ->
+                kotlinResult.onSuccess {
+                    result.success(true)
+                }.onFailure { error ->
+                    result.error("CHECK_AND_OPEN_ERROR", error.message, null)
                 }
-            } catch (e: Exception) {
-                result.error("FORCE_OPEN_ERROR", "Failed to force open: ${e.toString()}", null)
             }
         }
     }
 
-    //    // CMPManagerDelegate implementation
+    // CMPManagerDelegate implementation
     override fun didReceiveError(error: String) {
         val arguments = mapOf("error" to error)
         channel.invokeMethod("didReceiveError", arguments)
@@ -458,7 +446,6 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
                 println("Warning: openConsentLayer is deprecated. Use forceOpen instead")
                 forceOpen(call, result)
             }
-            "jumpToSettings" -> jumpToSettings(result)
             "checkIfConsentIsRequired" -> checkIfConsentIsRequired(result)
             "hasVendorConsent" -> hasVendorConsent(call, result)
             "hasPurposeConsent" -> hasPurposeConsent(call, result)

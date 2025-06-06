@@ -60,12 +60,6 @@ class CMPManager {
     return CmpSdkPlatform.instance.openConsentLayer();
   }
 
-  /// Directly opens the consent layer with the settings page
-  @Deprecated('Use forceOpen() with the jumpToSettings parameters instead')
-  Future<void> jumpToSettings() {
-    return CmpSdkPlatform.instance.jumpToSettings();
-  }
-
   /// Checks if the user has given consent for a specific vendor.
   ///
   /// [id] - The unique identifier for the vendor.
@@ -149,14 +143,12 @@ class CMPManager {
     DidShowConsentLayer? didShowConsentLayer,
     DidCloseConsentLayer? didCloseConsentLayer,
     DidReceiveError? didReceiveError,
-    DidChangeATTStatus? didChangeATTStatus,
   }) {
     CmpSdkPlatform.instance.addEventListeners(
       didReceiveConsent: didReceiveConsent,
       didShowConsentLayer: didShowConsentLayer,
       didCloseConsentLayer: didCloseConsentLayer,
       didReceiveError: didReceiveError,
-      didChangeATTStatus: didChangeATTStatus,
     );
   }
 

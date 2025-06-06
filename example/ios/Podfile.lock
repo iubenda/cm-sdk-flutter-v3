@@ -31,7 +31,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   cm-sdk-ios-v3: bb8049c902fbed62ff05b93cf0f4a82465921a4f
-  cm_cmp_sdk_v3: d6b29400c15eec191ea1e736ffb7c05a2840c853
+  cm_cmp_sdk_v3: 1adbb4d21f157eddbe40f2f434f83ab9d0d46c2f
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e

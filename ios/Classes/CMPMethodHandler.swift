@@ -20,8 +20,6 @@ class CMPMethodHandler {
             setUrlConfig(call: call, result: result)
         case "checkWithServerAndOpenIfNecessary":
             checkWithServerAndOpenIfNecessary(result: result)
-        case "jumpToSettings":
-            jumpToSettings(result: result)
         case "openConsentLayer":
             openConsentLayer(result: result)
         case "checkIfConsentIsRequired":
@@ -88,13 +86,13 @@ class CMPMethodHandler {
         result("CMPManager initialized")
     }
 
+
     private func setWebViewConfig(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else {
             result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
             return
         }
-        let config = CMPArgumentParser.parseConsentLayerUIConfig(from: args)
-        cmpManagerService?.setWebViewConfig(config: config)
+        cmpManagerService?.setWebViewConfigFromArgs(args)
         result("Consent Layer Configured")
     }
 
@@ -112,7 +110,7 @@ class CMPMethodHandler {
 
     private func getUserStatus(result: @escaping FlutterResult) {
         if let status = cmpManagerService?.getUserStatus() {
-            result(status) // status is already a dictionary with the correct format
+            result(status)
         } else {
             result([
                 "hasUserChoice": BridgeUserChoiceStatus.choiceDoesntExist.rawValue,
@@ -191,16 +189,6 @@ class CMPMethodHandler {
         cmpManagerService?.checkWithServerAndOpenIfNecessary { error in
             if let error = error {
                 result(FlutterError(code: "SERVER_ERROR", message: error, details: nil))
-            } else {
-                result("Success")
-            }
-        }
-    }
-
-    private func jumpToSettings(result: @escaping FlutterResult) {
-        cmpManagerService?.jumpToSettings { error in
-            if let error = error {
-                result(FlutterError(code: "SETTINGS_ERROR", message: error, details: nil))
             } else {
                 result("Success")
             }

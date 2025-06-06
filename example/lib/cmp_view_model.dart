@@ -1,3 +1,7 @@
+import 'dart:ui';
+
+import 'package:cm_cmp_sdk_v3/consent_layer_ui_config.dart';
+import 'package:cm_cmp_sdk_v3/constants/constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,6 +12,7 @@ class CmpViewModel extends ChangeNotifier {
 
   late CMPManager _cmpSdkPlugin;
   String _callbackLogs = '';
+  final CmpPosition _currentPosition = CmpPosition.halfScreenBottom;
 
   CmpViewModel._internal();
 
@@ -15,6 +20,17 @@ class CmpViewModel extends ChangeNotifier {
     try {
       _cmpSdkPlugin = CMPManager.instance;
 
+      ConsentLayerUIConfig config = ConsentLayerUIConfig(
+        position: _currentPosition,
+        backgroundStyle: CmpBackgroundStyle.dimmed,
+        cornerRadius: 8.0,
+        respectsSafeArea: true,
+        allowsOrientationChanges: true,
+        backgroundColor: Color.fromARGB(1, 255, 255, 255),
+        backgroundOpacity: 0.5,
+      );
+
+      await _cmpSdkPlugin.setWebViewConfig(config);
       await CMPManager.instance.setUrlConfig(
         appName: "CMDemoAppFlutter",
         id: "719197d2c212c",
@@ -38,8 +54,6 @@ class CmpViewModel extends ChangeNotifier {
       didReceiveError: (error) => _logCallback('Error: $error'),
       didReceiveConsent: (consent, jsonObject) =>
           _logCallback('Consent: $consent\nData: $jsonObject'),
-      didChangeATTStatus: (oldStatus, newStatus, last) =>
-          _logCallback('ATT Status changed: $oldStatus -> $newStatus'),
     );
   }
 
@@ -160,7 +174,7 @@ ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join('\n')}
   Future<void> forceOpen() async {
     try {
       await _cmpSdkPlugin.forceOpen();
-      Fluttertoast.showToast(msg: 'Opening consent layer');
+      Fluttertoast.showToast(msg: 'Opening consent layer with position: $_currentPosition');
     } catch (e) {
       Fluttertoast.showToast(msg: 'Error opening consent layer: $e');
     }

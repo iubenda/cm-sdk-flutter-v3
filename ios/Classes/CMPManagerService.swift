@@ -1,6 +1,7 @@
 import Flutter
 import cm_sdk_ios_v3
 import UIKit
+import WebKit
 
 public enum ConsentStatus: Int {
     case granted = 0
@@ -13,15 +14,106 @@ public enum UserChoiceStatus: Int {
     case requiresUpdate = 1
     case choiceDoesntExist = 2
 }
+
 class CMPManagerService: NSObject {
 
     var cmpManager: CMPManager?
     var channel: FlutterMethodChannel?
     var urlConfig: UrlConfig?
+    private var webViewConfigArgs: [String: Any]?
+    private var presentationObserver: NSObjectProtocol?
 
     init(channel: FlutterMethodChannel) {
-            super.init()
-            self.channel = channel
+        super.init()
+        self.channel = channel
+        setupPresentationObserver()
+    }
+
+    deinit {
+        if let observer = presentationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+    private func setupPresentationObserver() {
+        presentationObserver = NotificationCenter.default.addObserver(
+            forName: UIWindow.didBecomeVisibleNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.applyHalfScreenPositioningIfNeeded()
+        }
+    }
+
+    private func applyHalfScreenPositioningIfNeeded() {
+        guard let args = webViewConfigArgs,
+              let position = args["position"] as? String,
+              (position == "halfScreenTop" || position == "halfScreenBottom") else {
+            return
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            if let window = UIApplication.shared.windows.first,
+               let rootVC = window.rootViewController,
+               let presentedVC = self?.findPresentedWebViewController(from: rootVC) {
+                self?.adjustWebViewPosition(presentedVC, position: position)
+            }
+        }
+    }
+
+    private func findPresentedWebViewController(from viewController: UIViewController) -> UIViewController? {
+        if let presented = viewController.presentedViewController {
+            if presented.view.subviews.contains(where: { $0 is WKWebView }) {
+                return presented
+            }
+            return findPresentedWebViewController(from: presented)
+        }
+        return nil
+    }
+
+    private func adjustWebViewPosition(_ viewController: UIViewController, position: String) {
+        let screenBounds = UIScreen.main.bounds
+        let safeAreaInsets = viewController.view.safeAreaInsets
+
+        if let webView = findWebView(in: viewController.view) {
+            webView.translatesAutoresizingMaskIntoConstraints = true
+
+            switch position {
+            case "halfScreenTop":
+                let height = (screenBounds.height - safeAreaInsets.top - safeAreaInsets.bottom) / 2
+                webView.frame = CGRect(
+                    x: 0,
+                    y: safeAreaInsets.top,
+                    width: screenBounds.width,
+                    height: height
+                )
+            case "halfScreenBottom":
+                let height = (screenBounds.height - safeAreaInsets.top - safeAreaInsets.bottom) / 2
+                webView.frame = CGRect(
+                    x: 0,
+                    y: screenBounds.height - height - safeAreaInsets.bottom,
+                    width: screenBounds.width,
+                    height: height
+                )
+            default:
+                break
+            }
+
+            webView.removeFromSuperview()
+            viewController.view.addSubview(webView)
+        }
+    }
+
+    private func findWebView(in view: UIView) -> WKWebView? {
+        if let webView = view as? WKWebView {
+            return webView
+        }
+        for subview in view.subviews {
+            if let webView = findWebView(in: subview) {
+                return webView
+            }
+        }
+        return nil
     }
 
     func initialize(with viewController: UIViewController) {
@@ -31,9 +123,26 @@ class CMPManagerService: NSObject {
         if let urlConfig = self.urlConfig {
             self.cmpManager?.setUrlConfig(urlConfig)
         }
+        if let configArgs = webViewConfigArgs {
+            let config = CMPArgumentParser.parseConsentLayerUIConfig(from: configArgs)
+            self.cmpManager?.setWebViewConfig(config)
+        }
     }
 
     func setWebViewConfig(config: ConsentLayerUIConfig) {
+        self.cmpManager?.setWebViewConfig(config)
+    }
+
+    func setWebViewConfigFromArgs(_ args: [String: Any]) {
+        self.webViewConfigArgs = args
+
+        var modifiedArgs = args
+        if let position = args["position"] as? String,
+           (position == "halfScreenTop" || position == "halfScreenBottom") {
+            modifiedArgs["position"] = "fullScreen"
+        }
+
+        let config = CMPArgumentParser.parseConsentLayerUIConfig(from: modifiedArgs)
         self.cmpManager?.setWebViewConfig(config)
     }
 
@@ -69,7 +178,7 @@ class CMPManagerService: NSObject {
         }
     }
 
-    @available(*, deprecated, message: "Use getUserStatus() instead")
+    @available(*, deprecated, message: "Use checkAndOpen() instead")
     func checkIfConsentIsRequired(completion: @escaping (Bool) -> Void) {
         self.cmpManager?.checkIfConsentIsRequired { isRequired in
             completion(isRequired)
@@ -173,93 +282,93 @@ class CMPManagerService: NSObject {
         }
     }
 
-        // MARK: - New Methods (v3.1.0+)
+    // MARK: - New Methods (v3.1.0+)
 
-        func getStatusForPurpose(purposeId: String) -> BridgeConsentStatus {
-            guard let status = cmpManager?.getStatusForPurpose(id: purposeId) else {
-                return .choiceDoesntExist
-            }
-            return mapToConsentStatus(status)
+    func getStatusForPurpose(purposeId: String) -> BridgeConsentStatus {
+        guard let status = cmpManager?.getStatusForPurpose(id: purposeId) else {
+            return .choiceDoesntExist
+        }
+        return mapToConsentStatus(status)
+    }
+
+    func getStatusForVendor(vendorId: String) -> BridgeConsentStatus {
+        guard let status = cmpManager?.getStatusForVendor(id: vendorId) else {
+            return .choiceDoesntExist
+        }
+        return mapToConsentStatus(status)
+    }
+
+    func getUserStatus() -> [String: Any] {
+        guard let response = cmpManager?.getUserStatus() else {
+            return createEmptyUserStatus()
         }
 
-        func getStatusForVendor(vendorId: String) -> BridgeConsentStatus {
-            guard let status = cmpManager?.getStatusForVendor(id: vendorId) else {
-                return .choiceDoesntExist
-            }
-            return mapToConsentStatus(status)
+        var statusDict: [String: Any] = [
+            "hasUserChoice": mapChoiceStatus(response.status),
+            "vendors": response.vendors,
+            "purposes": response.purposes,
+            "tcf": response.tcf,
+            "addtlConsent": response.addtlConsent,
+            "regulation": response.regulation
+        ]
+
+        return convertDateValues(statusDict)
+    }
+
+    func getGoogleConsentModeStatus() -> [String: String] {
+        return cmpManager?.getGoogleConsentModeStatus() ?? [:]
+    }
+
+    // MARK: - Updated Methods
+
+    func checkAndOpen(jumpToSettings: Bool = false, completion: @escaping (String?) -> Void) {
+        cmpManager?.checkAndOpen(jumpToSettings: jumpToSettings) { error in
+            completion(error?.localizedDescription)
         }
+    }
 
-        func getUserStatus() -> [String: Any] {
-            guard let response = cmpManager?.getUserStatus() else {
-                return createEmptyUserStatus()
-            }
-
-            var statusDict: [String: Any] = [
-                "hasUserChoice": mapChoiceStatus(response.status),
-                "vendors": response.vendors,
-                "purposes": response.purposes,
-                "tcf": response.tcf,
-                "addtlConsent": response.addtlConsent,
-                "regulation": response.regulation
-            ]
-
-            return convertDateValues(statusDict)
+    func forceOpen(jumpToSettings: Bool = false, completion: @escaping (String?) -> Void) {
+        cmpManager?.forceOpen(jumpToSettings: jumpToSettings) { error in
+            completion(error?.localizedDescription)
         }
+    }
 
-        func getGoogleConsentModeStatus() -> [String: String] {
-            return cmpManager?.getGoogleConsentModeStatus() ?? [:]
+    // MARK: - Helper Methods
+
+    private func createEmptyUserStatus() -> [String: Any] {
+        return [
+            "hasUserChoice": "choiceDoesntExist",
+            "vendors": [:],
+            "purposes": [:],
+            "tcf": "",
+            "addtlConsent": "",
+            "regulation": ""
+        ]
+    }
+
+    private func mapToConsentStatus(_ status: UniqueConsentStatus) -> BridgeConsentStatus {
+        switch status {
+        case .granted:
+            return .granted
+        case .denied:
+            return .denied
+        case .choiceDoesntExist:
+            return .choiceDoesntExist
+        @unknown default:
+            return .choiceDoesntExist
         }
+    }
 
-        // MARK: - Updated Methods
-
-        func checkAndOpen(jumpToSettings: Bool = false, completion: @escaping (String?) -> Void) {
-            cmpManager?.checkAndOpen(jumpToSettings: jumpToSettings) { error in
-                completion(error?.localizedDescription)
-            }
+    private func mapChoiceStatus(_ status: String) -> Int {
+        switch status {
+        case "choiceExists":
+            return BridgeUserChoiceStatus.choiceExists.rawValue
+        case "requiresUpdate":
+            return BridgeUserChoiceStatus.requiresUpdate.rawValue
+        default:
+            return BridgeUserChoiceStatus.choiceDoesntExist.rawValue
         }
-
-        func forceOpen(jumpToSettings: Bool = false, completion: @escaping (String?) -> Void) {
-            cmpManager?.forceOpen(jumpToSettings: jumpToSettings) { error in
-                completion(error?.localizedDescription)
-            }
-        }
-
-        // MARK: - Helper Methods
-
-        private func createEmptyUserStatus() -> [String: Any] {
-            return [
-                "hasUserChoice": "choiceDoesntExist",
-                "vendors": [:],
-                "purposes": [:],
-                "tcf": "",
-                "addtlConsent": "",
-                "regulation": ""
-            ]
-        }
-
-        private func mapToConsentStatus(_ status: UniqueConsentStatus) -> BridgeConsentStatus {
-            switch status {
-            case .granted:
-                return .granted
-            case .denied:
-                return .denied
-            case .choiceDoesntExist:
-                return .choiceDoesntExist
-            @unknown default:
-                return .choiceDoesntExist
-            }
-        }
-
-        private func mapChoiceStatus(_ status: String) -> Int {
-            switch status {
-            case "choiceExists":
-                return BridgeUserChoiceStatus.choiceExists.rawValue
-            case "requiresUpdate":
-                return BridgeUserChoiceStatus.requiresUpdate.rawValue
-            default:
-                return BridgeUserChoiceStatus.choiceDoesntExist.rawValue
-            }
-        }
+    }
 }
 
 extension CMPManagerService: CMPManagerDelegate {
@@ -295,6 +404,7 @@ extension CMPManagerService: CMPManagerDelegate {
 
     public func didShowConsentLayer() {
         self.channel?.invokeMethod("didShowConsentLayer", arguments: nil)
+        applyHalfScreenPositioningIfNeeded()
     }
 
     public func didCloseConsentLayer() {
