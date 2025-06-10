@@ -1,5 +1,7 @@
 // main.dart
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_platform_interface.dart';
+import 'package:cm_cmp_sdk_v3/consent_layer_ui_config.dart';
+import 'package:cm_cmp_sdk_v3/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
 
@@ -42,8 +44,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _initializeCMP() async {
     try {
+      final ConsentLayerUIConfig webviewConfig = ConsentLayerUIConfig(
+        position: CmpPosition.fullScreen,
+      );
+      await CMPManager.instance.setWebViewConfig(webviewConfig);
       await _cmpManager.setUrlConfig(
-        id: "719197d2c212c",
+        id: "f5e3b73592c3c",
         domain: "delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",

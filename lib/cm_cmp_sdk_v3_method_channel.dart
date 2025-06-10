@@ -15,7 +15,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   DidCloseConsentLayer? didCloseConsentLayer;
   DidReceiveConsent? didReceiveConsent;
   DidReceiveError? didReceiveError;
-  DidChangeATTStatus? didChangeATTStatus;
 
   /// Opens the consent layer if consent is required and hasn't been given yet.
   @override
@@ -29,13 +28,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @Deprecated('Use forceOpen() instead')
   Future<void> openConsentLayer() async {
     await methodChannel.invokeMethod('openConsentLayer');
-  }
-
-  /// Opens the consent layer.
-  @override
-  @Deprecated('Use forceOpen() with the jumpToSettings parameters instead')
-  Future<void> jumpToSettings() async {
-    await methodChannel.invokeMethod('jumpToSettings');
   }
 
   /// Checks if there is consent for the specified vendor ID.
@@ -138,15 +130,12 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
     DidCloseConsentLayer? didCloseConsentLayer,
     DidReceiveConsent? didReceiveConsent,
     DidReceiveError? didReceiveError,
-    DidChangeATTStatus? didChangeATTStatus,
   }) async {
     this.didShowConsentLayer = didShowConsentLayer;
     this.didCloseConsentLayer = didCloseConsentLayer;
     this.didReceiveConsent = didReceiveConsent;
     this.didReceiveError = didReceiveError;
-    this.didChangeATTStatus = didChangeATTStatus;
 
-    // Notify native side to set up callbacks
     methodChannel.setMethodCallHandler(_handleMethodCall);
   }
 
@@ -170,15 +159,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
           final args = call.arguments as Map<dynamic, dynamic>;
           final String error = args['error'] as String;
           didReceiveError?.call(error);
-        }
-        break;
-      case 'didChangeATTStatus':
-        if (call.arguments is Map) {
-          final args = call.arguments as Map<dynamic, dynamic>;
-          final oldStatus = args['oldStatus'] as int;
-          final newStatus = args['newStatus'] as int;
-          final lastUpdated = args['lastUpdated'] as DateTime;
-          didChangeATTStatus?.call(oldStatus, newStatus, lastUpdated);
         }
         break;
       default:
@@ -297,12 +277,10 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   }
 
   ConsentStatus _parseConsentStatus(dynamic value) {
-    // Handle integer value (proper enum ordinal)
     if (value is int && value >= 0 && value < ConsentStatus.values.length) {
       return ConsentStatus.values[value];
     }
 
-    // Handle string value (enum name)
     if (value is String) {
       switch(value.toLowerCase()) {
         case 'granted': return ConsentStatus.granted;
@@ -311,17 +289,14 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       }
     }
 
-    // Default fallback
     return ConsentStatus.choiceDoesntExist;
   }
 
   UserChoiceStatus _parseUserChoiceStatus(dynamic value) {
-    // Handle integer value
     if (value is int && value >= 0 && value < UserChoiceStatus.values.length) {
       return UserChoiceStatus.values[value];
     }
 
-    // Handle string value
     if (value is String) {
       switch(value.toLowerCase()) {
         case 'choiceexists': return UserChoiceStatus.choiceExists;
@@ -354,7 +329,12 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) async {
     _onClickLinkCallback = callback;
-    // Register platform channel method handler if not already done
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      await methodChannel.invokeMethod('setOnClickLinkCallback');
+      return;
+    }
+
     if (callback != null) {
       methodChannel.setMethodCallHandler((call) async {
         if (call.method == 'onClickLink') {

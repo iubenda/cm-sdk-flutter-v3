@@ -23,7 +23,6 @@ class ConsentLayerUIConfig {
     this.customPosition,
   });
 
-  // Convert to a map to send to native iOS
   Map<String, dynamic> toMap() {
     return {
       'position': _positionToString(),

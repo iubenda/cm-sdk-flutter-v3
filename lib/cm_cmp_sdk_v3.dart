@@ -19,13 +19,14 @@ class CMPManager {
     required String appName,
     required String language,
   }) async {
-    // First set URL config
     await _methodChannel.setUrlConfig(
       id: id,
       domain: domain,
       appName: appName,
       language: language,
     );
+
+    await _methodChannel.setOnClickLinkCallback(null);
 
     // Then initialize if not already done
     if (!_isInitialized) {
@@ -48,7 +49,6 @@ class CMPManager {
     return CmpSdkPlatform.instance.checkWithServerAndOpenIfNecessary();
   }
 
-  // Check if consent is required. True when the user needs to give consent
   @Deprecated('Use checkAndOpen() instead')
   Future<bool> checkIfConsentIsRequired() {
     return CmpSdkPlatform.instance.checkIfConsentIsRequired();
@@ -58,12 +58,6 @@ class CMPManager {
   @Deprecated('Use forceOpen() instead')
   Future<void> openConsentLayer() {
     return CmpSdkPlatform.instance.openConsentLayer();
-  }
-
-  /// Directly opens the consent layer with the settings page
-  @Deprecated('Use forceOpen() with the jumpToSettings parameters instead')
-  Future<void> jumpToSettings() {
-    return CmpSdkPlatform.instance.jumpToSettings();
   }
 
   /// Checks if the user has given consent for a specific vendor.
@@ -149,14 +143,12 @@ class CMPManager {
     DidShowConsentLayer? didShowConsentLayer,
     DidCloseConsentLayer? didCloseConsentLayer,
     DidReceiveError? didReceiveError,
-    DidChangeATTStatus? didChangeATTStatus,
   }) {
     CmpSdkPlatform.instance.addEventListeners(
       didReceiveConsent: didReceiveConsent,
       didShowConsentLayer: didShowConsentLayer,
       didCloseConsentLayer: didCloseConsentLayer,
       didReceiveError: didReceiveError,
-      didChangeATTStatus: didChangeATTStatus,
     );
   }
 

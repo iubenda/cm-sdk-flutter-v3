@@ -3,8 +3,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'cm_cmp_sdk_v3_method_channel.dart';
 import 'consent_layer_ui_config.dart';
 
-typedef DidChangeATTStatus = void Function(
-    int oldStatus, int newStatus, DateTime lastUpdated);
 typedef DidReceiveError = void Function(String error);
 typedef DidReceiveConsent = void Function(
     String consent,
@@ -112,7 +110,6 @@ abstract class CmpSdkPlatform extends PlatformInterface {
     DidReceiveConsent? didReceiveConsent,
     DidShowConsentLayer? didShowConsentLayer,
     DidCloseConsentLayer? didCloseConsentLayer,
-    DidChangeATTStatus? didChangeATTStatus,
     DidReceiveError? didReceiveError,
   });
   Future<void> initialize();
@@ -158,8 +155,6 @@ abstract class CmpSdkPlatform extends PlatformInterface {
   Future<void> forceOpen({bool jumpToSettings = false});
 
   Future<void> checkAndOpen({bool jumpToSettings = false});
-
-  Future<void> jumpToSettings();
 
   @Deprecated('Use checkAndOpen() instead')
   Future<bool> checkIfConsentIsRequired();

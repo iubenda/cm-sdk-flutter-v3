@@ -20,8 +20,6 @@ class CMPMethodHandler {
             setUrlConfig(call: call, result: result)
         case "checkWithServerAndOpenIfNecessary":
             checkWithServerAndOpenIfNecessary(result: result)
-        case "jumpToSettings":
-            jumpToSettings(result: result)
         case "openConsentLayer":
             openConsentLayer(result: result)
         case "checkIfConsentIsRequired":
@@ -74,6 +72,8 @@ class CMPMethodHandler {
             getStatusForVendor(call: call, result: result)
         case "getGoogleConsentModeStatus":
             getGoogleConsentModeStatus(result: result)
+        case "setOnClickLinkCallback":
+            setOnClickLinkCallback(call: call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -88,13 +88,13 @@ class CMPMethodHandler {
         result("CMPManager initialized")
     }
 
+
     private func setWebViewConfig(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else {
             result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
             return
         }
-        let config = CMPArgumentParser.parseConsentLayerUIConfig(from: args)
-        cmpManagerService?.setWebViewConfig(config: config)
+        cmpManagerService?.setWebViewConfigFromArgs(args)
         result("Consent Layer Configured")
     }
 
@@ -112,7 +112,7 @@ class CMPMethodHandler {
 
     private func getUserStatus(result: @escaping FlutterResult) {
         if let status = cmpManagerService?.getUserStatus() {
-            result(status) // status is already a dictionary with the correct format
+            result(status)
         } else {
             result([
                 "hasUserChoice": BridgeUserChoiceStatus.choiceDoesntExist.rawValue,
@@ -191,16 +191,6 @@ class CMPMethodHandler {
         cmpManagerService?.checkWithServerAndOpenIfNecessary { error in
             if let error = error {
                 result(FlutterError(code: "SERVER_ERROR", message: error, details: nil))
-            } else {
-                result("Success")
-            }
-        }
-    }
-
-    private func jumpToSettings(result: @escaping FlutterResult) {
-        cmpManagerService?.jumpToSettings { error in
-            if let error = error {
-                result(FlutterError(code: "SETTINGS_ERROR", message: error, details: nil))
             } else {
                 result("Success")
             }
@@ -375,5 +365,13 @@ class CMPMethodHandler {
                 result(true)
             }
         }
+    }
+
+    private func setOnClickLinkCallback(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        NSLog("iOS: setOnClickLinkCallback called - using native WebView behavior")
+        NSLog("iOS: External links will attempt to open within the consent WebView")
+        NSLog("iOS: This is a limitation of the native iOS SDK architecture")
+
+        result("iOS: Native WebView link handling active")
     }
 }
