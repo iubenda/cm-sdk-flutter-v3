@@ -326,23 +326,37 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
     return Map<String, String>.from(result!);
   }
 
+// In cm_cmp_sdk_v3_method_channel.dart
+
   @override
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) async {
     _onClickLinkCallback = callback;
 
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      await methodChannel.invokeMethod('setOnClickLinkCallback');
-      return;
-    }
-
-    if (callback != null) {
-      methodChannel.setMethodCallHandler((call) async {
-        if (call.method == 'onClickLink') {
-          final url = call.arguments as String;
+    // This is a critical change - we need to replace the entire method handler
+    // to ensure we don't miss any events while still handling link clicks
+    methodChannel.setMethodCallHandler((MethodCall call) async {
+      if (call.method == 'onClickLink') {
+        // Handle link clicks - ensure the callback is not null
+        if (_onClickLinkCallback != null && call.arguments is Map<dynamic, dynamic>) {
+          final args = call.arguments as Map<dynamic, dynamic>;
+          final url = args['url'] as String;
+          print('Flutter received link click: $url'); // Debug log
           return _onClickLinkCallback?.call(url) ?? false;
         }
+        return false;
+      } else {
+        // All other events should still be handled by our original handler
+        await _handleMethodCall(call);
         return null;
-      });
+      }
+    });
+
+    // Now inform the native side that we're ready to receive link clicks
+    try {
+      await methodChannel.invokeMethod('setOnClickLinkCallback');
+      print('Link click handler registered with native side');
+    } catch (e) {
+      print('Error setting link click handler: $e');
     }
   }
 }

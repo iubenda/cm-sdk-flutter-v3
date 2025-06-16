@@ -470,7 +470,60 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             "getGoogleConsentModeStatus" -> getGoogleConsentModeStatus(result)
             "checkAndOpen" -> checkAndOpen(call, result)
             "forceOpen" -> forceOpen(call, result)
+            "setOnClickLinkCallback" -> setOnClickLinkCallback(call, result)
             else -> result.notImplemented()
+        }
+    }
+
+    private fun setOnClickLinkCallback(call: MethodCall, result: Result) {
+        try {
+            Log.d("CmpSdkPlugin", "Setting link click callback")
+
+            cmpManager?.setOnClickLinkCallback { url ->
+                Log.d("CmpSdkPlugin", "Link clicked: $url")
+
+                var handled = false
+                val latch = java.util.concurrent.CountDownLatch(1)
+
+                Handler(Looper.getMainLooper()).post {
+                    Log.d("CmpSdkPlugin", "Sending link click to Flutter: $url")
+
+                    channel.invokeMethod("onClickLink", mapOf("url" to url), object : MethodChannel.Result {
+                        override fun success(result: Any?) {
+                            Log.d("CmpSdkPlugin", "Flutter handled link: $result")
+                            handled = result as? Boolean ?: false
+                            latch.countDown()
+                        }
+
+                        override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                            Log.e("CmpSdkPlugin", "Error in link callback: $errorCode - $errorMessage")
+                            handled = false
+                            latch.countDown()
+                        }
+
+                        override fun notImplemented() {
+                            Log.e("CmpSdkPlugin", "onClickLink not implemented in Flutter")
+                            handled = false
+                            latch.countDown()
+                        }
+                    })
+                }
+
+                try {
+                    latch.await(500, java.util.concurrent.TimeUnit.MILLISECONDS)
+                    Log.d("CmpSdkPlugin", "Link handling result: $handled")
+                } catch (e: Exception) {
+                    Log.e("CmpSdkPlugin", "Error waiting for link click handler: ${e.message}")
+                }
+
+                return@setOnClickLinkCallback true
+            }
+
+            result.success(true)
+            Log.d("CmpSdkPlugin", "Link click callback set successfully")
+        } catch (e: Exception) {
+            Log.e("CmpSdkPlugin", "Failed to set click callback: ${e.message}", e)
+            result.error("CALLBACK_ERROR", "Failed to set click callback: ${e.toString()}", null)
         }
     }
 }

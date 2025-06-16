@@ -22,6 +22,7 @@ class CMPManagerService: NSObject {
     var urlConfig: UrlConfig?
     private var webViewConfigArgs: [String: Any]?
     private var presentationObserver: NSObjectProtocol?
+    private var linkClickHandler: ((String) -> Bool)?
 
     init(channel: FlutterMethodChannel) {
         super.init()
@@ -32,6 +33,27 @@ class CMPManagerService: NSObject {
     deinit {
         if let observer = presentationObserver {
             NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+    func getOnClickLinkCallback() -> ((String) -> Bool)? {
+        return linkClickHandler
+    }
+
+    func setOnClickLinkCallback(_ handler: ((String) -> Bool)?) {
+        self.linkClickHandler = handler
+
+        if let cmpManager = self.cmpManager {
+            if let handler = handler {
+                cmpManager.setLinkClickHandler { (url) -> Bool in
+                    let handledByFlutter = handler(url.absoluteString)
+                    NSLog("iOS: Link \(url.absoluteString) handled by Flutter: \(handledByFlutter)")
+
+                    return true
+                }
+            } else {
+                cmpManager.removeLinkClickHandler()
+            }
         }
     }
 

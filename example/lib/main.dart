@@ -1,9 +1,12 @@
 // main.dart
+import 'dart:developer' as developer;
+
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_platform_interface.dart';
 import 'package:cm_cmp_sdk_v3/consent_layer_ui_config.dart';
 import 'package:cm_cmp_sdk_v3/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
       );
       await CMPManager.instance.setWebViewConfig(webviewConfig);
       await _cmpManager.setUrlConfig(
-        id: "f5e3b73592c3c",
+        id: "26cba6cf81e76",
         domain: "delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",
@@ -69,6 +72,28 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() => _lastAction = 'Error: $error');
         },
       );
+
+      _cmpManager.setOnClickLinkCallback((url) {
+        developer.log('Link clicked: $url', name: 'CMP_DEMO');
+
+        // Check for the specific Google URL mentioned in your example
+        if (url.contains("click-behavior-tests")) {
+          try {
+            launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+            setState(() => _lastAction = 'Opened in browser: $url');
+            return true; // Return true to indicate we handled the URL
+          } catch (e) {
+            developer.log('Error opening URL: $url', name: 'CMP_DEMO', error: e);
+            setState(() => _lastAction = 'Error opening URL: $e');
+            return false;
+          }
+        } else {
+          // Let other URLs load in the WebView
+          setState(() => _lastAction = 'Loading in WebView: $url');
+          return false;
+        }
+      });
+
     } catch (e) {
       setState(() => _lastAction = 'Initialization error: $e');
     }
