@@ -4,7 +4,6 @@ import 'consent_layer_ui_config.dart';
 
 /// A Dart class providing access to CMP SDK functionalities.
 class CMPManager {
-  // The single instance of CmpSdk
   static final CMPManager _instance = CMPManager._internal();
   static CMPManager get instance => _instance;
   final _methodChannel = MethodChannelCmpSdk();
@@ -28,7 +27,6 @@ class CMPManager {
 
     await _methodChannel.setOnClickLinkCallback(null);
 
-    // Then initialize if not already done
     if (!_isInitialized) {
       await _methodChannel.initialize();
       _isInitialized = true;

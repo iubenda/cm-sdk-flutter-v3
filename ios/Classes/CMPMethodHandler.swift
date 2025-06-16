@@ -88,7 +88,6 @@ class CMPMethodHandler {
         result("CMPManager initialized")
     }
 
-
     private func setWebViewConfig(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else {
             result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
