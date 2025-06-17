@@ -85,13 +85,15 @@ class CMPArgumentParser {
         let cornerRadius = args["cornerRadius"] as? CGFloat ?? 0
         let respectsSafeArea = args["respectsSafeArea"] as? Bool ?? true
         let allowsOrientationChanges = args["allowsOrientationChanges"] as? Bool ?? true
+        let darkMode = args["darkMode"] as? Bool ?? false
 
         return ConsentLayerUIConfig(
             objcPosition: position.toNativePosition(),
             objcBackgroundStyle: backgroundStyle.toNativeStyle(),
             cornerRadius: cornerRadius,
             respectsSafeArea: respectsSafeArea,
-            allowsOrientationChanges: allowsOrientationChanges
+            allowsOrientationChanges: allowsOrientationChanges,
+            darkMode: darkMode
         )
     }
 

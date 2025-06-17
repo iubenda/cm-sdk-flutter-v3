@@ -12,13 +12,15 @@ class CmpArgumentParser {
             val cornerRadius = (args["cornerRadius"] as? Double)?.toFloat() ?: 0f
             val respectsSafeArea = args["respectsSafeArea"] as? Boolean ?: true
             val allowsOrientationChanges = args["allowsOrientationChanges"] as? Boolean ?: true
+            val darkMode = args["darkMode"] as? Boolean ?: false
 
             return ConsentLayerUIConfig(
                 position = position,
                 backgroundStyle = backgroundStyle,
                 cornerRadius = cornerRadius,
                 respectsSafeArea = respectsSafeArea,
-                allowsOrientationChanges = allowsOrientationChanges
+                allowsOrientationChanges = allowsOrientationChanges,
+                darkMode = darkMode
             )
         }
 

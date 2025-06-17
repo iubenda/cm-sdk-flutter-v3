@@ -49,10 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final ConsentLayerUIConfig webviewConfig = ConsentLayerUIConfig(
         position: CmpPosition.fullScreen,
+        darkMode: false,
       );
       await CMPManager.instance.setWebViewConfig(webviewConfig);
       await _cmpManager.setUrlConfig(
-        id: "26cba6cf81e76",
+        id: "f5e3b73592c3c",
         domain: "delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",

@@ -11,6 +11,7 @@ class ConsentLayerUIConfig {
   final Color? backgroundColor;
   final double? backgroundOpacity;
   final Rect? customPosition;
+  final bool darkMode;
 
   ConsentLayerUIConfig({
     this.position = CmpPosition.fullScreen,
@@ -21,6 +22,7 @@ class ConsentLayerUIConfig {
     this.backgroundColor,
     this.backgroundOpacity,
     this.customPosition,
+    this.darkMode = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -40,6 +42,7 @@ class ConsentLayerUIConfig {
               'bottom': customPosition!.bottom,
             }
           : null,
+      'darkMode': darkMode,
     };
   }
 
