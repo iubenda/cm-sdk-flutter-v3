@@ -1,7 +1,8 @@
+import Foundation
 import Flutter
+import WebKit
 import cm_sdk_ios_v3
 import UIKit
-import WebKit
 
 public enum ConsentStatus: Int {
     case granted = 0
@@ -37,21 +38,49 @@ class CMPManagerService: NSObject {
     }
 
     func getOnClickLinkCallback() -> ((String) -> Bool)? {
+        NSLog("iOS [DEBUG]: getOnClickLinkCallback called, handler exists: \(linkClickHandler != nil)")
         return linkClickHandler
     }
 
     func setOnClickLinkCallback(_ handler: ((String) -> Bool)?) {
+        NSLog("iOS [DEBUG]: setOnClickLinkCallback called in CMPManagerService with handler: \(handler != nil ? "set" : "nil")")
         self.linkClickHandler = handler
 
         if let cmpManager = self.cmpManager {
+            NSLog("iOS [DEBUG]: cmpManager exists, setting link click handler")
             if let handler = handler {
+                NSLog("iOS [DEBUG]: Setting link click handler on cmpManager")
+                
+                // CRITICAL FIX: Use a custom implementation that forces navigation cancellation
                 cmpManager.setLinkClickHandler { (url) -> Bool in
+                    NSLog("iOS [DEBUG]: Link click handler called by WebViewManager for URL: \(url)")
                     let handledByFlutter = handler(url.absoluteString)
-                    NSLog("iOS: Link \(url.absoluteString) handled by Flutter: \(handledByFlutter)")
+                    NSLog("iOS [DEBUG]: Link \(url.absoluteString) handled by Flutter: \(handledByFlutter)")
 
-                    return true
+                    // IMPORTANT: Return TRUE to CANCEL navigation in the webview
+                    // If Flutter handled it (returned true), we should cancel webview navigation
+                    NSLog("iOS [DEBUG]: Returning \(handledByFlutter) to WebViewManager - TRUE means CANCEL navigation")
+                    
+                    // FORCE CANCEL if Flutter handled it
+                    if handledByFlutter {
+                        NSLog("iOS [DEBUG]: Flutter handled the link, FORCING navigation cancellation")
+                        
+                        // This is a critical fix - we need to ensure the WebView doesn't navigate
+                        // even if something else in the native SDK is allowing it
+                        DispatchQueue.main.async {
+                            if let webViewController = self.findWebViewController(),
+                               let webView = self.findWebView(in: webViewController.view) {
+                                NSLog("iOS [DEBUG]: Found WebView in controller, stopping navigation")
+                                webView.stopLoading()
+                            }
+                        }
+                    }
+                    
+                    return handledByFlutter
                 }
+                NSLog("iOS [DEBUG]: Link click handler set on cmpManager")
             } else {
+                NSLog("iOS [DEBUG]: Removing link click handler from cmpManager")
                 cmpManager.removeLinkClickHandler()
             }
         }
@@ -124,18 +153,6 @@ class CMPManagerService: NSObject {
             webView.removeFromSuperview()
             viewController.view.addSubview(webView)
         }
-    }
-
-    private func findWebView(in view: UIView) -> WKWebView? {
-        if let webView = view as? WKWebView {
-            return webView
-        }
-        for subview in view.subviews {
-            if let webView = findWebView(in: subview) {
-                return webView
-            }
-        }
-        return nil
     }
 
     func initialize(with viewController: UIViewController) {
@@ -390,6 +407,93 @@ class CMPManagerService: NSObject {
         default:
             return BridgeUserChoiceStatus.choiceDoesntExist.rawValue
         }
+    }
+    
+    // MARK: - WebView Navigation Helper Methods
+    
+    func findWebViewController() -> UIViewController? {
+        NSLog("iOS [DEBUG]: Searching for WebViewController")
+        if #available(iOS 13.0, *) {
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let window = windowScene.windows.first,
+                  let rootVC = window.rootViewController else {
+                NSLog("iOS [DEBUG]: Could not find root view controller")
+                return nil
+            }
+            return findWebViewControllerRecursively(in: rootVC)
+        } else {
+            // Fallback for iOS 12 and below
+            guard let window = UIApplication.shared.windows.first,
+                  let rootVC = window.rootViewController else {
+                NSLog("iOS [DEBUG]: Could not find root view controller")
+                return nil
+            }
+            return findWebViewControllerRecursively(in: rootVC)
+        }
+    }
+    
+    func findWebView(in view: UIView) -> WKWebView? {
+        // Check if this view is a WKWebView
+        if let webView = view as? WKWebView {
+            NSLog("iOS [DEBUG]: Found WKWebView directly")
+            return webView
+        }
+        
+        // Recursively check subviews
+        for subview in view.subviews {
+            if let webView = findWebView(in: subview) {
+                return webView
+            }
+        }
+        
+        return nil
+    }
+    
+    private func findWebViewControllerRecursively(in viewController: UIViewController) -> UIViewController? {
+        NSLog("iOS [DEBUG]: Checking view controller: \(type(of: viewController))")
+        
+        // Check if this view controller has a WKWebView
+        if let _ = findWebView(in: viewController.view) {
+            NSLog("iOS [DEBUG]: Found WebView in view controller: \(type(of: viewController))")
+            return viewController
+        }
+        
+        // Check presented view controller
+        if let presented = viewController.presentedViewController {
+            NSLog("iOS [DEBUG]: Checking presented view controller")
+            if let webVC = findWebViewControllerRecursively(in: presented) {
+                return webVC
+            }
+        }
+        
+        // Check child view controllers
+        for child in viewController.children {
+            NSLog("iOS [DEBUG]: Checking child view controller")
+            if let webVC = findWebViewControllerRecursively(in: child) {
+                return webVC
+            }
+        }
+        
+        // Check navigation controller
+        if let navVC = viewController as? UINavigationController {
+            NSLog("iOS [DEBUG]: Checking navigation controller's visible view controller")
+            if let visibleVC = navVC.visibleViewController,
+               let webVC = findWebViewControllerRecursively(in: visibleVC) {
+                return webVC
+            }
+        }
+        
+        // Check tab bar controller
+        if let tabVC = viewController as? UITabBarController {
+            NSLog("iOS [DEBUG]: Checking tab bar controller's selected view controller")
+            if let selectedVC = tabVC.selectedViewController,
+               let webVC = findWebViewControllerRecursively(in: selectedVC) {
+                return webVC
+            }
+        }
+        
+        NSLog("iOS [DEBUG]: No WebView found in this view controller hierarchy")
+        return nil
     }
 }
 

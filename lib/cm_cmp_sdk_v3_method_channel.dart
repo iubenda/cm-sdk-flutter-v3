@@ -330,22 +330,39 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   @override
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) async {
+    print('[DEBUG] Flutter: Setting link click callback: ${callback != null ? 'provided' : 'null'}');
     _onClickLinkCallback = callback;
 
     // This is a critical change - we need to replace the entire method handler
     // to ensure we don't miss any events while still handling link clicks
     methodChannel.setMethodCallHandler((MethodCall call) async {
+      print('[DEBUG] Flutter: Received method call: ${call.method}');
       if (call.method == 'onClickLink') {
+        print('[DEBUG] Flutter: Handling onClickLink method call');
         // Handle link clicks - ensure the callback is not null
         if (_onClickLinkCallback != null && call.arguments is Map<dynamic, dynamic>) {
           final args = call.arguments as Map<dynamic, dynamic>;
           final url = args['url'] as String;
-          print('Flutter received link click: $url'); // Debug log
-          return _onClickLinkCallback?.call(url) ?? false;
+          print('[DEBUG] Flutter: Received link click for URL: $url');
+          
+          // CRITICAL FIX: Process link clicks as quickly as possible
+          // We need to return immediately to avoid timeouts in native code
+          bool result;
+          try {
+            // Use a synchronous approach to ensure fast response
+            result = _onClickLinkCallback?.call(url) ?? false;
+            print('[DEBUG] Flutter: Link handled by callback: $result (TRUE means handled by Flutter)');
+          } catch (e) {
+            print('[DEBUG] Flutter: Error in link callback: $e');
+            result = false;
+          }
+          return result;
         }
+        print('[DEBUG] Flutter: No callback available or invalid arguments, returning false');
         return false;
       } else {
         // All other events should still be handled by our original handler
+        print('[DEBUG] Flutter: Delegating to original handler: ${call.method}');
         await _handleMethodCall(call);
         return null;
       }
@@ -353,10 +370,11 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
     // Now inform the native side that we're ready to receive link clicks
     try {
+      print('[DEBUG] Flutter: Registering link click handler with native side');
       await methodChannel.invokeMethod('setOnClickLinkCallback');
-      print('Link click handler registered with native side');
+      print('[DEBUG] Flutter: Link click handler registered with native side');
     } catch (e) {
-      print('Error setting link click handler: $e');
+      print('[DEBUG] Flutter: Error setting link click handler: $e');
     }
   }
 }

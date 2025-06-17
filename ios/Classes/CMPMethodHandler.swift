@@ -74,8 +74,6 @@ class CMPMethodHandler {
             getGoogleConsentModeStatus(result: result)
         case "setOnClickLinkCallback":
             setOnClickLinkCallback(call: call, result: result)
-        case "setOnClickLinkCallback":
-            setOnClickLinkCallback(call: call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -369,17 +367,44 @@ class CMPMethodHandler {
     }
 
     private func setOnClickLinkCallback(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        NSLog("iOS: Setting up link click callback")
-
+        NSLog("iOS [DEBUG]: Setting up link click callback in CMPMethodHandler")
+        
+        // Store the channel for later use
+        let flutterChannel = self.channel
+        
         cmpManagerService?.setOnClickLinkCallback { url in
-            NSLog("iOS: Link click intercepted: \(url)")
-
-            let args = ["url": url]
-            var handled = false
-
-            // Create a semaphore for synchronous communication
-            let semaphore = DispatchSemaphore(value: 0)
-
+            NSLog("iOS [DEBUG]: Link click intercepted in CMPMethodHandler: \(url)")
+            
+            // SIMPLE APPROACH: Always return false initially to allow navigation
+            // This prevents any waiting or blocking
+            NSLog("iOS [DEBUG]: Initially allowing navigation to prevent blocking")
+            
+            // Then asynchronously notify Flutter about the link
+            // Flutter can still handle the link externally if needed
+            DispatchQueue.main.async {
+                flutterChannel?.invokeMethod("onClickLink", arguments: ["url": url], result: { flutterResult in
+                    if let boolResult = flutterResult as? Bool, boolResult == true {
+                        NSLog("iOS [DEBUG]: Flutter handled link externally: \(url)")
+                        
+                        // If Flutter handled it externally, we can try to stop the webview navigation
+                        // but we don't block the UI waiting for this
+                        if let cmpManagerService = self.cmpManagerService {
+                            DispatchQueue.main.async {
+                                NSLog("iOS [DEBUG]: Attempting to stop webview navigation after external handling")
+                                if let webViewController = cmpManagerService.findWebViewController(),
+                                   let webView = cmpManagerService.findWebView(in: webViewController.view) {
+                                    webView.stopLoading()
+                                    NSLog("iOS [DEBUG]: Stopped webview navigation after external handling")
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+            
+            // Always return false to allow initial navigation
+            // This prevents any blocking or waiting
+            return false
         }
         result("iOS: Native WebView link handling active")
     }
