@@ -64,5 +64,5 @@ flutter {
 }
 
 dependencies {
-    implementation 'net.consentmanager.sdkv3:cmsdkv3:3.2.0'
+    implementation 'net.consentmanager.sdkv3:cmsdkv3:3.3.0'
 }

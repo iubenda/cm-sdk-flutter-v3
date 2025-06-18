@@ -16,7 +16,7 @@ To use the `cm_cmp_sdk_v3` plugin, add it to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  cm_cmp_sdk_v3: ^3.2.3
+  cm_cmp_sdk_v3: ^3.3.0
 ```
 
 Then, run the following command to install the plugin:
