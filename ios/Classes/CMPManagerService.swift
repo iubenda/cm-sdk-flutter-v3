@@ -51,22 +51,15 @@ class CMPManagerService: NSObject {
             if let handler = handler {
                 NSLog("iOS [DEBUG]: Setting link click handler on cmpManager")
                 
-                // CRITICAL FIX: Use a custom implementation that forces navigation cancellation
                 cmpManager.setLinkClickHandler { (url) -> Bool in
                     NSLog("iOS [DEBUG]: Link click handler called by WebViewManager for URL: \(url)")
                     let handledByFlutter = handler(url.absoluteString)
                     NSLog("iOS [DEBUG]: Link \(url.absoluteString) handled by Flutter: \(handledByFlutter)")
-
-                    // IMPORTANT: Return TRUE to CANCEL navigation in the webview
-                    // If Flutter handled it (returned true), we should cancel webview navigation
                     NSLog("iOS [DEBUG]: Returning \(handledByFlutter) to WebViewManager - TRUE means CANCEL navigation")
                     
-                    // FORCE CANCEL if Flutter handled it
                     if handledByFlutter {
                         NSLog("iOS [DEBUG]: Flutter handled the link, FORCING navigation cancellation")
                         
-                        // This is a critical fix - we need to ensure the WebView doesn't navigate
-                        // even if something else in the native SDK is allowing it
                         DispatchQueue.main.async {
                             if let webViewController = self.findWebViewController(),
                                let webView = self.findWebView(in: webViewController.view) {
@@ -433,13 +426,11 @@ class CMPManagerService: NSObject {
     }
     
     func findWebView(in view: UIView) -> WKWebView? {
-        // Check if this view is a WKWebView
         if let webView = view as? WKWebView {
             NSLog("iOS [DEBUG]: Found WKWebView directly")
             return webView
         }
         
-        // Recursively check subviews
         for subview in view.subviews {
             if let webView = findWebView(in: subview) {
                 return webView
@@ -452,13 +443,11 @@ class CMPManagerService: NSObject {
     private func findWebViewControllerRecursively(in viewController: UIViewController) -> UIViewController? {
         NSLog("iOS [DEBUG]: Checking view controller: \(type(of: viewController))")
         
-        // Check if this view controller has a WKWebView
         if let _ = findWebView(in: viewController.view) {
             NSLog("iOS [DEBUG]: Found WebView in view controller: \(type(of: viewController))")
             return viewController
         }
         
-        // Check presented view controller
         if let presented = viewController.presentedViewController {
             NSLog("iOS [DEBUG]: Checking presented view controller")
             if let webVC = findWebViewControllerRecursively(in: presented) {
@@ -466,7 +455,6 @@ class CMPManagerService: NSObject {
             }
         }
         
-        // Check child view controllers
         for child in viewController.children {
             NSLog("iOS [DEBUG]: Checking child view controller")
             if let webVC = findWebViewControllerRecursively(in: child) {
@@ -474,7 +462,6 @@ class CMPManagerService: NSObject {
             }
         }
         
-        // Check navigation controller
         if let navVC = viewController as? UINavigationController {
             NSLog("iOS [DEBUG]: Checking navigation controller's visible view controller")
             if let visibleVC = navVC.visibleViewController,
@@ -483,7 +470,6 @@ class CMPManagerService: NSObject {
             }
         }
         
-        // Check tab bar controller
         if let tabVC = viewController as? UITabBarController {
             NSLog("iOS [DEBUG]: Checking tab bar controller's selected view controller")
             if let selectedVC = tabVC.selectedViewController,
