@@ -52,7 +52,7 @@ android {
     }
 
     dependencies {
-        implementation 'net.consentmanager.sdkv3:cmsdkv3:3.3.0'
+        implementation 'net.consentmanager.sdkv3:cmsdkv3:3.4.0'
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.10.0'
     }

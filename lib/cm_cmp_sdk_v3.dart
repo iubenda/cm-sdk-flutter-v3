@@ -215,4 +215,11 @@ class CMPManager {
   Future<void> checkAndOpen({bool jumpToSettings = false}) {
     return CmpSdkPlatform.instance.checkAndOpen(jumpToSettings: jumpToSettings);
   }
+
+  /// Enables or disables automatic consent updates.
+  /// 
+  /// [enabled] - true to enable automatic updates, false to disable
+  Future<void> setAutomaticConsentUpdatesEnabled(bool enabled) {
+    return CmpSdkPlatform.instance.setAutomaticConsentUpdatesEnabled(enabled);
+  }
 }

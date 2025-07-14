@@ -370,4 +370,9 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       print('[DEBUG] Flutter: Error setting link click handler: $e');
     }
   }
+
+  @override
+  Future<void> setAutomaticConsentUpdatesEnabled(bool enabled) async {
+    await methodChannel.invokeMethod('setAutomaticConsentUpdatesEnabled', {'enabled': enabled});
+  }
 }

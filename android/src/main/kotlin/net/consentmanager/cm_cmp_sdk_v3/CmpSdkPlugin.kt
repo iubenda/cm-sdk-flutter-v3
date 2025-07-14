@@ -471,6 +471,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             "checkAndOpen" -> checkAndOpen(call, result)
             "forceOpen" -> forceOpen(call, result)
             "setOnClickLinkCallback" -> setOnClickLinkCallback(call, result)
+            "setAutomaticConsentUpdatesEnabled" -> setAutomaticConsentUpdatesEnabled(call, result)
             else -> result.notImplemented()
         }
     }
@@ -524,6 +525,20 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         } catch (e: Exception) {
             Log.e("CmpSdkPlugin", "Failed to set click callback: ${e.message}", e)
             result.error("CALLBACK_ERROR", "Failed to set click callback: ${e.toString()}", null)
+        }
+    }
+    
+    private fun setAutomaticConsentUpdatesEnabled(call: MethodCall, result: Result) {
+        val enabled = call.argument<Boolean>("enabled") ?: run {
+            result.error("INVALID_ARGUMENT", "Enabled parameter not provided", null)
+            return
+        }
+        
+        try {
+            cmpManager?.setAutomaticConsentUpdatesEnabled(enabled)
+            result.success("Automatic consent updates enabled: $enabled")
+        } catch (e: Exception) {
+            result.error("SET_AUTOMATIC_CONSENT_ERROR", "Failed to set automatic consent updates: ${e.message}", null)
         }
     }
 }

@@ -74,6 +74,8 @@ class CMPMethodHandler {
             getGoogleConsentModeStatus(result: result)
         case "setOnClickLinkCallback":
             setOnClickLinkCallback(call: call, result: result)
+        case "setAutomaticConsentUpdatesEnabled":
+            setAutomaticConsentUpdatesEnabled(call: call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -397,5 +399,17 @@ class CMPMethodHandler {
             return false
         }
         result("iOS: Native WebView link handling active")
+    }
+    
+    private func setAutomaticConsentUpdatesEnabled(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any],
+              let enabled = args["enabled"] as? Bool else {
+            result(FlutterError(code: "INVALID_ARGUMENT", message: "Enabled parameter not provided", details: nil))
+            return
+        }
+        
+        // Call the instance method on cmpManagerService following the same pattern as other methods
+        cmpManagerService?.setAutomaticConsentUpdatesEnabled(enabled)
+        result("Automatic consent updates enabled: \(enabled)")
     }
 }

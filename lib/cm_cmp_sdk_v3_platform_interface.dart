@@ -177,4 +177,5 @@ abstract class CmpSdkPlatform extends PlatformInterface {
   Future<ConsentStatus> getStatusForVendor(String id);
   Future<Map<String, String>> getGoogleConsentModeStatus();
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback);
+  Future<void> setAutomaticConsentUpdatesEnabled(bool enabled);
 }

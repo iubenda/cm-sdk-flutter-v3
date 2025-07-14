@@ -359,10 +359,14 @@ class CMPManagerService: NSObject {
         }
     }
 
-    func forceOpen(jumpToSettings: Bool = false, completion: @escaping (String?) -> Void) {
+    func forceOpen(jumpToSettings: Bool, completion: @escaping (String?) -> Void) {
         cmpManager?.forceOpen(jumpToSettings: jumpToSettings) { error in
             completion(error?.localizedDescription)
         }
+    }
+    
+    func setAutomaticConsentUpdatesEnabled(_ enabled: Bool) {
+        cmpManager?.setAutomaticFirebaseConsentUpdatesEnabled(enabled)
     }
 
     // MARK: - Helper Methods
