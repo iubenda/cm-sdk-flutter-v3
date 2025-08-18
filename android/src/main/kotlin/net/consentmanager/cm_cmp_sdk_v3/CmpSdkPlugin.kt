@@ -24,8 +24,10 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     private var urlConfig: UrlConfig? = null
     private var webViewConfig: ConsentLayerUIConfig = ConsentLayerUIConfig(
         position = ConsentLayerUIConfig.Position.FULL_SCREEN,
+        backgroundStyle = ConsentLayerUIConfig.BackgroundStyle.dimmed(android.graphics.Color.BLACK, 0.5f),
         cornerRadius = 0f,
         respectsSafeArea = true,
+        isCancelable = false,
         allowsOrientationChanges = true
     )
 

@@ -19,6 +19,7 @@ class CmpArgumentParser {
                 backgroundStyle = backgroundStyle,
                 cornerRadius = cornerRadius,
                 respectsSafeArea = respectsSafeArea,
+                isCancelable = false,
                 allowsOrientationChanges = allowsOrientationChanges,
                 darkMode = darkMode
             )
