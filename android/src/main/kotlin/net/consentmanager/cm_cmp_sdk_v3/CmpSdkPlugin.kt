@@ -472,9 +472,24 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             "getGoogleConsentModeStatus" -> getGoogleConsentModeStatus(result)
             "checkAndOpen" -> checkAndOpen(call, result)
             "forceOpen" -> forceOpen(call, result)
+            "importCMPInfo" -> importCMPInfo(call, result)
             "setOnClickLinkCallback" -> setOnClickLinkCallback(call, result)
             "setAutomaticConsentUpdatesEnabled" -> setAutomaticConsentUpdatesEnabled(call, result)
             else -> result.notImplemented()
+        }
+    }
+
+    private fun importCMPInfo(call: MethodCall, result: Result) {
+        val cmpString = call.argument<String>("cmpString") ?: run {
+            result.error("INVALID_ARGUMENT", "CMP String is required", null)
+            return
+        }
+        cmpManager?.importCMPInfo(cmpString) { kotlinResult ->
+            kotlinResult.onSuccess {
+                result.success(true)
+            }.onFailure { error ->
+                result.error("IMPORT_CMP_ERROR", error.message, null)
+            }
         }
     }
 

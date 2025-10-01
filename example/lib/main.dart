@@ -164,6 +164,8 @@ Purposes: ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join(', '
                     () => _handleApiCall(() => _cmpManager.rejectAll(), 'Reject All')),
             _buildButton('Export CMP Info',
                     () => _handleApiCall(() => _cmpManager.exportCMPInfo(), 'Export CMP Info')),
+            _buildButton('Import CMP Info (Test)',
+                    () => _handleApiCall(() => _cmpManager.importCMPInfo('Q1FZV01VZ1FZV01VZ0FmZWVCRU5CLUZnQUFBQUFBQUFBQWlnQUFBQUFBQUEjXzFfI19zNjYwX1VfIzEtLS0j'), 'Import CMP Info')),
             _buildButton('Get User Status',
                     () => _handleApiCall(() => _cmpManager.getUserStatus(), 'User Status')),
             _buildButton('Reset Data',
