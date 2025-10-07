@@ -53,7 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
       );
       await CMPManager.instance.setWebViewConfig(webviewConfig);
       await _cmpManager.setUrlConfig(
-        id: "f5e3b73592c3c",
+        id: "3b3e7e8712330",
         domain: "delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",
@@ -94,6 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
           return false;
         }
       });
+
+      await _cmpManager.importCMPInfo(
+          'Q1FZM0pzZ1FZM0pzZ0FmYjRCRU5CX0ZnQUFBQUFBQUFBQWlnQUFBQUFBQUEjXzUxXyNfczEwNTJfczI2MTJfczkwNV9zMTQ0OF9jNzM3MzdfVV8jMS0tLSM');
 
     } catch (e) {
       setState(() => _lastAction = 'Initialization error: $e');
