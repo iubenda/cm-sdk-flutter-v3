@@ -185,48 +185,6 @@ class CMPManagerService: NSObject {
         }
     }
 
-    @available(*, deprecated, message: "Use checkAndOpen() instead")
-    func checkWithServerAndOpenIfNecessary(completion: @escaping (String?) -> Void) {
-        self.cmpManager?.checkWithServerAndOpenIfNecessary { error in
-            completion(error?.localizedDescription)
-        }
-    }
-
-    @available(*, deprecated, message: "Use forceOpen() instead")
-    func openConsentLayer(completion: @escaping (String?) -> Void) {
-        DispatchQueue.main.async {
-            self.cmpManager?.openConsentLayer { error in
-                completion(error?.localizedDescription)
-            }
-        }
-    }
-
-    @available(*, deprecated, message: "Use forceOpen() instead")
-    func jumpToSettings(completion: @escaping (String?) -> Void) {
-        DispatchQueue.main.async {
-            self.cmpManager?.jumpToSettings { error in
-                completion(error?.localizedDescription)
-            }
-        }
-    }
-
-    @available(*, deprecated, message: "Use checkAndOpen() instead")
-    func checkIfConsentIsRequired(completion: @escaping (Bool) -> Void) {
-        self.cmpManager?.checkIfConsentIsRequired { isRequired in
-            completion(isRequired)
-        }
-    }
-
-    @available(*, deprecated, message: "Use getStatusForVendor() instead")
-    func hasVendorConsent(vendorId: String) -> Bool {
-        return self.cmpManager?.hasVendorConsent(id: vendorId) ?? false
-    }
-
-    @available(*, deprecated, message: "Use getStatusForPurpose() instead")
-    func hasPurposeConsent(purposeId: String) -> Bool {
-        return self.cmpManager?.hasPurposeConsent(id: purposeId) ?? false
-    }
-
     func exportCMPInfo() -> String? {
         return self.cmpManager?.exportCMPInfo()
     }
@@ -235,41 +193,6 @@ class CMPManagerService: NSObject {
         self.cmpManager?.resetConsentManagementData { error in
             completion(error?.localizedDescription)
         }
-    }
-
-    @available(*, deprecated, message: "Use getUserStatus() instead")
-    func getAllVendorsIDs() -> [String]? {
-        return self.cmpManager?.getAllVendorsIDs()
-    }
-
-    @available(*, deprecated, message: "Use getUserStatus() instead")
-    func getAllPurposesIDs() -> [String]? {
-        return self.cmpManager?.getAllPurposesIDs()
-    }
-
-    @available(*, deprecated, message: "Use getUserStatus() instead")
-    func hasUserChoice() -> Bool {
-        return self.cmpManager?.hasUserChoice() ?? false
-    }
-
-    @available(*, deprecated, message: "Use getUserStatus() instead")
-    func getEnabledPurposesIDs() -> [String]? {
-        return self.cmpManager?.getEnabledPurposesIDs()
-    }
-
-    @available(*, deprecated, message: "Use getUserStatus() instead")
-    func getEnabledVendorsIDs() -> [String]? {
-        return self.cmpManager?.getEnabledVendorsIDs()
-    }
-
-    @available(*, deprecated, message: "Use getUserStatus() instead")
-    func getDisabledPurposesIDs() -> [String]? {
-        return self.cmpManager?.getDisabledPurposesIDs()
-    }
-
-    @available(*, deprecated, message: "Use getUserStatus() instead")
-    func getDisabledVendorsIDs() -> [String]? {
-        return self.cmpManager?.getDisabledVendorsIDs()
     }
 
     func importCMPInfo(cmpString: String, completion: @escaping (Bool) -> Void) {
@@ -367,6 +290,10 @@ class CMPManagerService: NSObject {
     
     func setAutomaticConsentUpdatesEnabled(_ enabled: Bool) {
         cmpManager?.setAutomaticFirebaseConsentUpdatesEnabled(enabled)
+    }
+
+    func setATTStatus(_ status: Int) {
+        cmpManager?.setATTStatus(status)
     }
 
     // MARK: - Helper Methods

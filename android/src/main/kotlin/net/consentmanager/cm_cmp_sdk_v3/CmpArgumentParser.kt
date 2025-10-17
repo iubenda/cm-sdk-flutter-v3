@@ -30,8 +30,9 @@ class CmpArgumentParser {
             val domain = args["domain"] as String
             val language = args["language"] as String
             val appName = args["appName"] as String
+            val noHash = args["noHash"] as? Boolean ?: false
 
-            return UrlConfig(id = id, domain = domain, language = language, appName = appName)
+            return UrlConfig(id = id, domain = domain, language = language, appName = appName, jsonConfig = "{}", noHash = noHash)
         }
 
         private fun parsePosition(positionString: String?): ConsentLayerUIConfig.Position {

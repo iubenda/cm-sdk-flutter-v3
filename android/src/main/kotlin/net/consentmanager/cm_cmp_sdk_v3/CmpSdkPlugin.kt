@@ -100,10 +100,11 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         val domain = args["domain"] as? String ?: ""
         val language = args["language"] as? String ?: ""
         val appName = args["appName"] as? String ?: ""
+        val noHash = args["noHash"] as? Boolean ?: false
 
-        Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName")
+        Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName, noHash: $noHash")
 
-        urlConfig = UrlConfig(id, domain, language, appName)
+        urlConfig = UrlConfig(id, domain, language, appName, jsonConfig = "{}", noHash = noHash)
         cmpManager = null
 
         try {
@@ -113,67 +114,6 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             result.success(null)
         } catch (e: Exception) {
             result.error("URL_CONFIG_ERROR", "Failed to set URL config: ${e.message}", null)
-        }
-    }
-
-    // Consent Layer Actions
-    private fun openConsentLayer(result: Result) {
-        val handler = Handler(Looper.getMainLooper())
-        handler.post {
-            try {
-                cmpManager?.openConsentLayer {
-                    result.success(null)
-                }
-            } catch (e: Exception) {
-                result.error("CONSENT_LAYER_ERROR", "Failed to open consent layer: ${e.toString()}", null)
-            }
-        }
-    }
-
-    private fun checkWithServerAndOpenIfNecessary(result: Result) {
-        cmpManager?.checkWithServerAndOpenIfNecessary {
-            if (it.isSuccess) {
-                result.success(null)
-            } else {
-                result.error("SERVER_CHECK_ERROR", "Failed to check with server", null)
-            }
-        }
-    }
-
-    private fun checkIfConsentIsRequired(result: Result) {
-        try {
-             cmpManager?.checkIfConsentIsRequired { isRequired ->
-                result.success(isRequired)
-            }
-        } catch (e: Exception) {
-            result.error("CONSENT_CHECK_ERROR", "Failed to check consent requirement: ${e.toString()}", null)
-        }
-    }
-
-    // Vendor and Purpose Consent Actions
-    private fun hasVendorConsent(call: MethodCall, result: Result) {
-        val id = call.argument<String>("id") ?: run {
-            result.error("INVALID_ARGUMENTS", "Vendor ID is required", null)
-            return
-        }
-        try {
-            val hasConsent = cmpManager?.hasVendorConsent(id) ?: false
-            result.success(hasConsent)
-        } catch (e: Exception) {
-            result.error("CONSENT_ERROR", "Failed to check vendor consent: ${e.toString()}", null)
-        }
-    }
-
-    private fun hasPurposeConsent(call: MethodCall, result: Result) {
-        val id = call.argument<String>("id") ?: run {
-            result.error("INVALID_ARGUMENTS", "Purpose ID is required", null)
-            return
-        }
-        try {
-            val hasConsent = cmpManager?.hasPurposeConsent(id) ?: false
-            result.success(hasConsent)
-        } catch (e: Exception) {
-            result.error("CONSENT_ERROR", "Failed to check purpose consent: ${e.toString()}", null)
         }
     }
 
@@ -248,69 +188,6 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             result.success(null)
         } catch (e: Exception) {
             result.error("RESET_ERROR", "Failed to reset consent data: ${e.toString()}", null)
-        }
-    }
-
-    private fun getAllVendorsIDs(result: Result) {
-        try {
-            val ids = cmpManager?.getAllVendorsIDs()
-            result.success(ids)
-        } catch (e: Exception) {
-            result.error("VENDORS_ERROR", "Failed to get all vendors IDs: ${e.toString()}", null)
-        }
-    }
-
-    private fun getAllPurposesIDs(result: Result) {
-        try {
-            val ids = cmpManager?.getAllPurposesIDs()
-            result.success(ids)
-        } catch (e: Exception) {
-            result.error("PURPOSES_ERROR", "Failed to get all purposes IDs: ${e.toString()}", null)
-        }
-    }
-
-    private fun hasUserChoice(result: Result) {
-        try {
-            val hasChoice = cmpManager?.hasUserChoice() ?: false
-            result.success(hasChoice)
-        } catch (e: Exception) {
-            result.error("USER_CHOICE_ERROR", "Failed to check user choice: ${e.toString()}", null)
-        }
-    }
-
-    private fun getEnabledPurposesIDs(result: Result) {
-        try {
-            val ids = cmpManager?.getEnabledPurposesIDs()
-            result.success(ids)
-        } catch (e: Exception) {
-            result.error("ENABLED_PURPOSES_ERROR", "Failed to get enabled purposes IDs: ${e.toString()}", null)
-        }
-    }
-
-    private fun getEnabledVendorsIDs(result: Result) {
-        try {
-            val ids = cmpManager?.getEnabledVendorsIDs()
-            result.success(ids)
-        } catch (e: Exception) {
-            result.error("ENABLED_VENDORS_ERROR", "Failed to get enabled vendors IDs: ${e.toString()}", null)
-        }
-    }
-
-    private fun getDisabledPurposesIDs(result: Result) {
-        try {
-            val ids = cmpManager?.getDisabledPurposesIDs()
-            result.success(ids)
-        } catch (e: Exception) {
-            result.error("DISABLED_PURPOSES_ERROR", "Failed to get disabled purposes IDs: ${e.toString()}", null)
-        }
-    }
-
-    private fun getDisabledVendorsIDs(result: Result) {
-        try {
-            val ids = cmpManager?.getDisabledVendorsIDs()
-            result.success(ids)
-        } catch (e: Exception) {
-            result.error("DISABLED_VENDORS_ERROR", "Failed to get disabled vendors IDs: ${e.toString()}", null)
         }
     }
 
@@ -440,26 +317,8 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             "initialize" -> initialize(result)
             "setWebViewConfig" -> setWebViewConfig(call, result)
             "setUrlConfig" -> setUrlConfig(call, result)
-            "checkWithServerAndOpenIfNecessary" -> {
-                println("Warning: checkWithServerAndOpenIfNecessary is deprecated. Use checkAndOpen instead")
-                checkAndOpen(call, result)
-            }
-            "openConsentLayer" -> {
-                println("Warning: openConsentLayer is deprecated. Use forceOpen instead")
-                forceOpen(call, result)
-            }
-            "checkIfConsentIsRequired" -> checkIfConsentIsRequired(result)
-            "hasVendorConsent" -> hasVendorConsent(call, result)
-            "hasPurposeConsent" -> hasPurposeConsent(call, result)
             "exportCMPInfo" -> exportCMPInfo(result)
             "resetConsentManagementData" -> resetConsentManagementData(result)
-            "getAllVendorsIDs" -> getAllVendorsIDs(result)
-            "getAllPurposesIDs" -> getAllPurposesIDs(result)
-            "hasUserChoice" -> hasUserChoice(result)
-            "getEnabledPurposesIDs" -> getEnabledPurposesIDs(result)
-            "getEnabledVendorsIDs" -> getEnabledVendorsIDs(result)
-            "getDisabledPurposesIDs" -> getDisabledPurposesIDs(result)
-            "getDisabledVendorsIDs" -> getDisabledVendorsIDs(result)
             "acceptAll" -> acceptAll(result)
             "rejectAll" -> rejectAll(result)
             "acceptVendors" -> acceptVendors(call, result)
@@ -475,6 +334,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             "importCMPInfo" -> importCMPInfo(call, result)
             "setOnClickLinkCallback" -> setOnClickLinkCallback(call, result)
             "setAutomaticConsentUpdatesEnabled" -> setAutomaticConsentUpdatesEnabled(call, result)
+            "setATTStatus" -> setATTStatus(call, result)
             else -> result.notImplemented()
         }
     }
@@ -557,5 +417,11 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         } catch (e: Exception) {
             result.error("SET_AUTOMATIC_CONSENT_ERROR", "Failed to set automatic consent updates: ${e.message}", null)
         }
+    }
+
+    private fun setATTStatus(call: MethodCall, result: Result) {
+        val status = call.argument<Int>("status")
+        Log.d("CmpSdkPlugin", "setATTStatus called with status: $status (iOS-only, ignored on Android)")
+        result.success("ATT status is iOS-only and ignored on Android")
     }
 }

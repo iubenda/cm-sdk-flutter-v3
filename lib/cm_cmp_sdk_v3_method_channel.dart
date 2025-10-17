@@ -16,38 +16,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   DidReceiveConsent? didReceiveConsent;
   DidReceiveError? didReceiveError;
 
-  /// Opens the consent layer if consent is required and hasn't been given yet.
-  @override
-  @Deprecated('Use checkAndOpen() instead')
-  Future<void> checkWithServerAndOpenIfNecessary() async {
-    await methodChannel.invokeMethod('checkWithServerAndOpenIfNecessary');
-  }
-
-  /// Opens the consent layer.
-  @override
-  @Deprecated('Use forceOpen() instead')
-  Future<void> openConsentLayer() async {
-    await methodChannel.invokeMethod('openConsentLayer');
-  }
-
-  /// Checks if there is consent for the specified vendor ID.
-  @override
-  @Deprecated('Use getStatusForVendor() instead')
-  Future<bool> hasVendorConsent(String id, {bool defaultReturn = true}) async {
-    final result =
-        await methodChannel.invokeMethod<bool>('hasVendorConsent', {'id': id});
-    return result ?? false;
-  }
-
-  /// Checks if there is consent for the specified purpose ID.
-  @override
-  @Deprecated('Use getStatusForPurpose() instead')
-  Future<bool> hasPurposeConsent(String id, {bool defaultReturn = true}) async {
-    final result =
-        await methodChannel.invokeMethod<bool>('hasPurposeConsent', {'id': id});
-    return result ?? false;
-  }
-
   /// Exports the current CMP string.
   @override
   Future<String?> exportCMPInfo() async {
@@ -59,68 +27,6 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<void> resetConsentManagementData() async {
     await methodChannel.invokeMethod('resetConsentManagementData');
-  }
-
-  /// Retrieves a list of all vendors.
-  @override
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getAllVendorsIDs() async {
-    final vendors =
-        await methodChannel.invokeListMethod<dynamic>('getAllVendorsIDs');
-    return vendors ?? [];
-  }
-
-  /// Retrieves a list of all purposes.
-  @override
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getAllPurposesIDs() async {
-    final purposes =
-        await methodChannel.invokeListMethod<dynamic>('getAllPurposesIDs');
-    return purposes ?? [];
-  }
-
-  /// Checks if consent has been given.
-  @override
-  @Deprecated('Use getUserStatus() instead')
-  Future<bool> hasUserChoice() async {
-    final result = await methodChannel.invokeMethod<bool>('hasUserChoice');
-    return result ?? false;
-  }
-
-  /// Retrieves a list of enabled purposes.
-  @override
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getEnabledPurposesIDs() async {
-    final purposes =
-        await methodChannel.invokeListMethod<dynamic>('getEnabledPurposesIDs');
-    return purposes ?? [];
-  }
-
-  /// Retrieves a list of enabled vendors.
-  @override
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getEnabledVendorsIDs() async {
-    final vendors =
-        await methodChannel.invokeListMethod<dynamic>('getEnabledVendorsIDs');
-    return vendors ?? [];
-  }
-
-  /// Retrieves a list of disabled purposes.
-  @override
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getDisabledPurposesIDs() async {
-    final purposes =
-        await methodChannel.invokeListMethod<dynamic>('getDisabledPurposesIDs');
-    return purposes ?? [];
-  }
-
-  /// Retrieves a list of disabled vendors.
-  @override
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getDisabledVendorsIDs() async {
-    final vendors =
-        await methodChannel.invokeListMethod<dynamic>('getDisabledVendorsIDs');
-    return vendors ?? [];
   }
 
   /// Sets up callbacks for consent events.
@@ -212,19 +118,14 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   }
 
   @override
-  @Deprecated('Use checkAndOpen() instead')
-  Future<bool> checkIfConsentIsRequired() async {
-    return await methodChannel.invokeMethod('checkIfConsentIsRequired');
-  }
-
-  @override
   Future<void> setUrlConfig(
       {required String id,
       required String domain,
       required String appName,
-      required String language}) async {
+      required String language,
+      bool noHash = false}) async {
     await methodChannel.invokeMethod('setUrlConfig',
-        {'id': id, 'domain': domain, 'appName': appName, 'language': language});
+        {'id': id, 'domain': domain, 'appName': appName, 'language': language, 'noHash': noHash});
   }
 
   @override
@@ -374,5 +275,10 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<void> setAutomaticConsentUpdatesEnabled(bool enabled) async {
     await methodChannel.invokeMethod('setAutomaticConsentUpdatesEnabled', {'enabled': enabled});
+  }
+
+  @override
+  Future<void> setATTStatus(int status) async {
+    await methodChannel.invokeMethod('setATTStatus', {'status': status});
   }
 }

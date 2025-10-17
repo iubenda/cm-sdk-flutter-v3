@@ -18,36 +18,12 @@ class CMPMethodHandler {
             setWebViewConfig(call: call, result: result)
         case "setUrlConfig":
             setUrlConfig(call: call, result: result)
-        case "checkWithServerAndOpenIfNecessary":
-            checkWithServerAndOpenIfNecessary(result: result)
-        case "openConsentLayer":
-            openConsentLayer(result: result)
-        case "checkIfConsentIsRequired":
-            checkIfConsentIsRequired(result: result)
-        case "hasVendorConsent":
-            hasVendorConsent(call: call, result: result)
-        case "hasPurposeConsent":
-            hasPurposeConsent(call: call, result: result)
         case "exportCMPInfo":
             exportCMPInfo(result: result)
         case "importCMPInfo":
             importCMPInfo(call: call, result: result)
         case "resetConsentManagementData":
             resetConsentManagementData(result: result)
-        case "getAllVendorsIDs":
-            getAllVendorsIDs(result: result)
-        case "getAllPurposesIDs":
-            getAllPurposesIDs(result: result)
-        case "hasUserChoice":
-            hasUserChoice(result: result)
-        case "getEnabledPurposesIDs":
-            getEnabledPurposesIDs(result: result)
-        case "getEnabledVendorsIDs":
-            getEnabledVendorsIDs(result: result)
-        case "getDisabledPurposesIDs":
-            getDisabledPurposesIDs(result: result)
-        case "getDisabledVendorsIDs":
-            getDisabledVendorsIDs(result: result)
         case "acceptAll":
             acceptAll(result: result)
         case "rejectAll":
@@ -76,6 +52,8 @@ class CMPMethodHandler {
             setOnClickLinkCallback(call: call, result: result)
         case "setAutomaticConsentUpdatesEnabled":
             setAutomaticConsentUpdatesEnabled(call: call, result: result)
+        case "setATTStatus":
+            setATTStatus(call: call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -187,51 +165,6 @@ class CMPMethodHandler {
         }
     }
 
-
-    private func checkWithServerAndOpenIfNecessary(result: @escaping FlutterResult) {
-        cmpManagerService?.checkWithServerAndOpenIfNecessary { error in
-            if let error = error {
-                result(FlutterError(code: "SERVER_ERROR", message: error, details: nil))
-            } else {
-                result("Success")
-            }
-        }
-    }
-
-    private func openConsentLayer(result: @escaping FlutterResult) {
-        cmpManagerService?.openConsentLayer { error in
-            if let error = error {
-                result(FlutterError(code: "CONSENT_LAYER_ERROR", message: error, details: nil))
-            } else {
-                result("Consent Layer Opened")
-            }
-        }
-    }
-
-    private func checkIfConsentIsRequired(result: @escaping FlutterResult) {
-        cmpManagerService?.checkIfConsentIsRequired { isRequired in
-            result(isRequired)
-        }
-    }
-
-    private func hasVendorConsent(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard let args = call.arguments as? [String: Any], let vendorId = args["id"] as? String else {
-            result(FlutterError(code: "INVALID_ARGUMENT", message: "Vendor ID is required", details: nil))
-            return
-        }
-        let hasConsent = cmpManagerService?.hasVendorConsent(vendorId: vendorId) ?? false
-        result(hasConsent)
-    }
-
-    private func hasPurposeConsent(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard let args = call.arguments as? [String: Any], let purposeId = args["id"] as? String else {
-            result(FlutterError(code: "INVALID_ARGUMENT", message: "Purpose ID is required", details: nil))
-            return
-        }
-        let hasConsent = cmpManagerService?.hasPurposeConsent(purposeId: purposeId) ?? false
-        result(hasConsent)
-    }
-
     private func exportCMPInfo(result: @escaping FlutterResult) {
         let cmpInfo = cmpManagerService?.exportCMPInfo()
         result(cmpInfo)
@@ -255,41 +188,6 @@ class CMPMethodHandler {
                 result("Consent data reset")
             }
         }
-    }
-
-    private func getAllVendorsIDs(result: @escaping FlutterResult) {
-        let vendorIds = cmpManagerService?.getAllVendorsIDs()
-        result(vendorIds)
-    }
-
-    private func getAllPurposesIDs(result: @escaping FlutterResult) {
-        let purposeIds = cmpManagerService?.getAllPurposesIDs()
-        result(purposeIds)
-    }
-
-    private func hasUserChoice(result: @escaping FlutterResult) {
-        let hasConsent = cmpManagerService?.hasUserChoice() ?? false
-        result(hasConsent)
-    }
-
-    private func getEnabledPurposesIDs(result: @escaping FlutterResult) {
-        let purposes = cmpManagerService?.getEnabledPurposesIDs()
-        result(purposes)
-    }
-
-    private func getEnabledVendorsIDs(result: @escaping FlutterResult) {
-        let vendors = cmpManagerService?.getEnabledVendorsIDs()
-        result(vendors)
-    }
-
-    private func getDisabledPurposesIDs(result: @escaping FlutterResult) {
-        let purposes = cmpManagerService?.getDisabledPurposesIDs()
-        result(purposes)
-    }
-
-    private func getDisabledVendorsIDs(result: @escaping FlutterResult) {
-        let vendors = cmpManagerService?.getDisabledVendorsIDs()
-        result(vendors)
     }
 
     private func acceptAll(result: @escaping FlutterResult) {
@@ -411,5 +309,16 @@ class CMPMethodHandler {
         // Call the instance method on cmpManagerService following the same pattern as other methods
         cmpManagerService?.setAutomaticConsentUpdatesEnabled(enabled)
         result("Automatic consent updates enabled: \(enabled)")
+    }
+
+    private func setATTStatus(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any],
+              let status = args["status"] as? Int else {
+            result(FlutterError(code: "INVALID_ARGUMENT", message: "Status parameter not provided", details: nil))
+            return
+        }
+        
+        cmpManagerService?.setATTStatus(status)
+        result("ATT status set to: \(status)")
     }
 }

@@ -102,7 +102,8 @@ class CMPArgumentParser {
         let domain = args["domain"] as! String
         let language = args["language"] as! String
         let appName = args["appName"] as! String
+        let noHash = args["noHash"] as? Bool ?? false
 
-        return UrlConfig(id: id, domain: domain, language: language, appName: appName)
+        return UrlConfig(id: id, domain: domain, language: language, appName: appName, jsonConfig: nil, noHash: noHash)
     }
 }

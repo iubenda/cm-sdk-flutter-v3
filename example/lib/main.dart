@@ -53,8 +53,8 @@ class _MyHomePageState extends State<MyHomePage> {
       );
       await CMPManager.instance.setWebViewConfig(webviewConfig);
       await _cmpManager.setUrlConfig(
-        id: "3b3e7e8712330",
-        domain: "delivery.consentmanager.net",
+        id: "f5e3b73592c3c",
+        domain: "a.delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",
       );
@@ -95,8 +95,8 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       });
 
-      await _cmpManager.importCMPInfo(
-          'Q1FZM0pzZ1FZM0pzZ0FmYjRCRU5CX0ZnQUFBQUFBQUFBQWlnQUFBQUFBQUEjXzUxXyNfczEwNTJfczI2MTJfczkwNV9zMTQ0OF9jNzM3MzdfVV8jMS0tLSM');
+      // await _cmpManager.importCMPInfo(
+      //     'Q1FaRWVQQVFaRWVQQUFmYjRCRU5DQUZnQVBMQUFFTEFBQWlnRjV3QVFGNWdYbkFCQVhtQUFBI181MV81Ml81NF8jX3MxMDUyX3MxX3MyNl9zMjYxMl9zOTA1X3MxNDQ4X2M3MzczN19VXyMxLS0tIw');
 
     } catch (e) {
       setState(() => _lastAction = 'Initialization error: $e');
@@ -168,7 +168,7 @@ Purposes: ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join(', '
             _buildButton('Export CMP Info',
                     () => _handleApiCall(() => _cmpManager.exportCMPInfo(), 'Export CMP Info')),
             _buildButton('Import CMP Info (Test)',
-                    () => _handleApiCall(() => _cmpManager.importCMPInfo('Q1FZV01VZ1FZV01VZ0FmZWVCRU5CLUZnQUFBQUFBQUFBQWlnQUFBQUFBQUEjXzFfI19zNjYwX1VfIzEtLS0j'), 'Import CMP Info')),
+                    () => _handleApiCall(() => _cmpManager.importCMPInfo('Q1FaRWVQQVFaRWVQQUFmYjRCRU5DQUZnQVBMQUFFTEFBQWlnRjV3QVFGNWdYbkFCQVhtQUFBI181MV81Ml81NF8jX3MxMDUyX3MxX3MyNl9zMjYxMl9zOTA1X3MxNDQ4X2M3MzczN19VXyMxLS0tIw'), 'Import CMP Info')),
             _buildButton('Get User Status',
                     () => _handleApiCall(() => _cmpManager.getUserStatus(), 'User Status')),
             _buildButton('Reset Data',

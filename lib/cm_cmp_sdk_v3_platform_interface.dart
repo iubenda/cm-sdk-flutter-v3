@@ -117,47 +117,13 @@ abstract class CmpSdkPlatform extends PlatformInterface {
       {required String id,
       required String domain,
       required String appName,
-      required String language});
+      required String language,
+      bool noHash = false});
   Future<void> setWebViewConfig(ConsentLayerUIConfig config);
 
-  @Deprecated('Use getUserStatus() instead')
-  Future<bool> hasUserChoice();
-
-  @Deprecated('Use getStatusForVendor() instead')
-  Future<bool> hasVendorConsent(String id, {bool defaultReturn = true});
-
-  @Deprecated('Use getStatusForPurpose() instead')
-  Future<bool> hasPurposeConsent(String id, {bool defaultReturn = true});
-
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getAllVendorsIDs();
-
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getAllPurposesIDs();
-
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getEnabledPurposesIDs();
-
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getEnabledVendorsIDs();
-
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getDisabledPurposesIDs();
-
-  @Deprecated('Use getUserStatus() instead')
-  Future<List<dynamic>> getDisabledVendorsIDs();
-
-  @Deprecated('Use checkAndOpen() instead')
-  Future<void> checkWithServerAndOpenIfNecessary();
-
-  @Deprecated('Use forceOpen() instead')
-  Future<void> openConsentLayer();
   Future<void> forceOpen({bool jumpToSettings = false});
 
   Future<void> checkAndOpen({bool jumpToSettings = false});
-
-  @Deprecated('Use checkAndOpen() instead')
-  Future<bool> checkIfConsentIsRequired();
 
   Future<void> acceptPurposes(List<String> purposes,
       {bool updateVendors = true});
@@ -178,4 +144,5 @@ abstract class CmpSdkPlatform extends PlatformInterface {
   Future<Map<String, String>> getGoogleConsentModeStatus();
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback);
   Future<void> setAutomaticConsentUpdatesEnabled(bool enabled);
+  Future<void> setATTStatus(int status);
 }

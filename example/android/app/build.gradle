@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "net.consentmanager.cmp_sdk_example"
-    compileSdkVersion 34
+    compileSdkVersion 36
     ndkVersion "26.3.11579264"
 
     compileOptions {
@@ -64,5 +64,5 @@ flutter {
 }
 
 dependencies {
-    implementation 'net.consentmanager.sdkv3:cmsdkv3:3.5.2'
+    implementation 'net.consentmanager.sdkv3:cmsdkv3:3.6.0'
 }
