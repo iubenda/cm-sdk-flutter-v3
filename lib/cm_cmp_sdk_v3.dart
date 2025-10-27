@@ -32,7 +32,6 @@ class CMPManager {
     if (!_isInitialized) {
       await _methodChannel.initialize();
       _isInitialized = true;
-      await _methodChannel.checkAndOpen();
     }
   }
 

@@ -95,6 +95,10 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       });
 
+      // Explicitly check and open consent layer if needed
+      // This matches the behavior of native Android and iOS demo apps
+      await _cmpManager.checkAndOpen();
+
       // await _cmpManager.importCMPInfo(
       //     'Q1FaRWVQQVFaRWVQQUFmYjRCRU5DQUZnQVBMQUFFTEFBQWlnRjV3QVFGNWdYbkFCQVhtQUFBI181MV81Ml81NF8jX3MxMDUyX3MxX3MyNl9zMjYxMl9zOTA1X3MxNDQ4X2M3MzczN19VXyMxLS0tIw');
 
