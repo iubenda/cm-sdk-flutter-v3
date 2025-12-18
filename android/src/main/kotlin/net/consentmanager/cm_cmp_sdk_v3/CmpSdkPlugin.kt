@@ -27,7 +27,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         backgroundStyle = ConsentLayerUIConfig.BackgroundStyle.dimmed(android.graphics.Color.BLACK, 0.5f),
         cornerRadius = 0f,
         respectsSafeArea = true,
-        isCancelable = false,
+        isCancelable = true,
         allowsOrientationChanges = true
     )
 
@@ -84,7 +84,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             result.error("INVALID_ARGUMENTS", "Arguments for setting WebViewConfig are missing", null)
             return
         }
-        webViewConfig = CmpArgumentParser.parseConsentLayerUIConfig(args)
+        webViewConfig = CmpArgumentParser.parseConsentLayerUIConfig(args, activityContext)
         result.success(null)
     }
 
@@ -100,11 +100,12 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         val domain = args["domain"] as? String ?: ""
         val language = args["language"] as? String ?: ""
         val appName = args["appName"] as? String ?: ""
+        val jsonConfig = args["jsonConfig"] as? String ?: "{}"
         val noHash = args["noHash"] as? Boolean ?: false
 
         Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName, noHash: $noHash")
 
-        urlConfig = UrlConfig(id, domain, language, appName, jsonConfig = "{}", noHash = noHash)
+        urlConfig = UrlConfig(id, domain, language, appName, jsonConfig = jsonConfig, noHash = noHash)
         cmpManager = null
 
         try {
@@ -335,6 +336,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
             "setOnClickLinkCallback" -> setOnClickLinkCallback(call, result)
             "setAutomaticConsentUpdatesEnabled" -> setAutomaticConsentUpdatesEnabled(call, result)
             "setATTStatus" -> setATTStatus(call, result)
+            "isConsentRequired" -> isConsentRequired(result)
             else -> result.notImplemented()
         }
     }
@@ -421,7 +423,25 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
 
     private fun setATTStatus(call: MethodCall, result: Result) {
         val status = call.argument<Int>("status")
-        Log.d("CmpSdkPlugin", "setATTStatus called with status: $status (iOS-only, ignored on Android)")
+        Log.d("CmpSdkPlugin", "setATTStatus called with status: $status (ignored on Android)")
         result.success("ATT status is iOS-only and ignored on Android")
+    }
+
+    private fun isConsentRequired(result: Result) {
+        val handler = Handler(Looper.getMainLooper())
+        handler.post {
+            // Ensure activity is set before checking consent
+            activityContext?.let { activity ->
+                cmpManager?.setActivity(activity)
+            }
+            
+            cmpManager?.isConsentRequired { kotlinResult ->
+                kotlinResult.onSuccess { isRequired ->
+                    result.success(isRequired)
+                }.onFailure { error ->
+                    result.error("IS_CONSENT_REQUIRED_ERROR", error.message, null)
+                }
+            }
+        }
     }
 }

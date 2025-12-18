@@ -54,6 +54,8 @@ class CMPMethodHandler {
             setAutomaticConsentUpdatesEnabled(call: call, result: result)
         case "setATTStatus":
             setATTStatus(call: call, result: result)
+        case "isConsentRequired":
+            isConsentRequired(result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -83,6 +85,9 @@ class CMPMethodHandler {
             return
         }
         let config = CMPArgumentParser.parseUrlConfig(from: args)
+        if let domain = args["domain"] as? String {
+            cmpManagerService?.domainHost = domain
+        }
         cmpManagerService?.setUrlConfig(config: config)
         result("Consent URL Configured")
     }
@@ -320,5 +325,17 @@ class CMPMethodHandler {
         
         cmpManagerService?.setATTStatus(status)
         result("ATT status set to: \(status)")
+    }
+
+    private func isConsentRequired(result: @escaping FlutterResult) {
+        cmpManagerService?.isConsentRequired { isRequired, error in
+            if let error = error {
+                result(FlutterError(code: "IS_CONSENT_REQUIRED_ERROR",
+                                  message: error.localizedDescription,
+                                  details: nil))
+            } else {
+                result(isRequired)
+            }
+        }
     }
 }

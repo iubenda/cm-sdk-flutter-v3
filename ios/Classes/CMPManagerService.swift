@@ -21,6 +21,7 @@ class CMPManagerService: NSObject {
     var cmpManager: CMPManager?
     var channel: FlutterMethodChannel?
     var urlConfig: UrlConfig?
+    var domainHost: String?
     private var webViewConfigArgs: [String: Any]?
     private var presentationObserver: NSObjectProtocol?
     private var linkClickHandler: ((String) -> Bool)?
@@ -53,6 +54,15 @@ class CMPManagerService: NSObject {
                 
                 cmpManager.setLinkClickHandler { (url) -> Bool in
                     NSLog("iOS [DEBUG]: Link click handler called by WebViewManager for URL: \(url)")
+
+                    // Ignore internal CMP navigations (same domain as UrlConfig)
+                    if let domain = self.domainHost?.lowercased(),
+                       let host = url.host?.lowercased(),
+                       host.contains(domain) || domain.contains(host) {
+                        NSLog("iOS [DEBUG]: Detected internal CMP navigation, letting WebView proceed")
+                        return false
+                    }
+
                     let handledByFlutter = handler(url.absoluteString)
                     NSLog("iOS [DEBUG]: Link \(url.absoluteString) handled by Flutter: \(handledByFlutter)")
                     NSLog("iOS [DEBUG]: Returning \(handledByFlutter) to WebViewManager - TRUE means CANCEL navigation")
@@ -119,33 +129,41 @@ class CMPManagerService: NSObject {
         let screenBounds = UIScreen.main.bounds
         let safeAreaInsets = viewController.view.safeAreaInsets
 
-        if let webView = findWebView(in: viewController.view) {
-            webView.translatesAutoresizingMaskIntoConstraints = true
+        guard let webView = findWebView(in: viewController.view) else { return }
+        webView.translatesAutoresizingMaskIntoConstraints = true
 
-            switch position {
-            case "halfScreenTop":
-                let height = (screenBounds.height - safeAreaInsets.top - safeAreaInsets.bottom) / 2
-                webView.frame = CGRect(
-                    x: 0,
-                    y: safeAreaInsets.top,
-                    width: screenBounds.width,
-                    height: height
-                )
-            case "halfScreenBottom":
-                let height = (screenBounds.height - safeAreaInsets.top - safeAreaInsets.bottom) / 2
-                webView.frame = CGRect(
-                    x: 0,
-                    y: screenBounds.height - height - safeAreaInsets.bottom,
-                    width: screenBounds.width,
-                    height: height
-                )
-            default:
-                break
-            }
-
-            webView.removeFromSuperview()
-            viewController.view.addSubview(webView)
+        let height = (screenBounds.height - safeAreaInsets.top - safeAreaInsets.bottom) / 2
+        var yOrigin: CGFloat = safeAreaInsets.top
+        switch position {
+        case "halfScreenTop":
+            yOrigin = safeAreaInsets.top
+        case "halfScreenBottom":
+            yOrigin = screenBounds.height - height - safeAreaInsets.bottom
+        default:
+            break
         }
+
+        webView.frame = CGRect(
+            x: 0,
+            y: yOrigin,
+            width: screenBounds.width,
+            height: height
+        )
+
+        // Add a dimmed background if requested
+        if let styleString = webViewConfigArgs?["backgroundStyle"] as? String,
+           styleString == "dimmed" {
+            let colorValue = webViewConfigArgs?["backgroundColor"] as? Int ?? 0x000000
+            let opacity = webViewConfigArgs?["backgroundOpacity"] as? CGFloat ?? 0.5
+            let overlay = UIView(frame: screenBounds)
+            overlay.backgroundColor = UIColor(rgb: colorValue).withAlphaComponent(opacity)
+            overlay.isUserInteractionEnabled = false
+            overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            viewController.view.insertSubview(overlay, belowSubview: webView)
+        }
+
+        webView.removeFromSuperview()
+        viewController.view.addSubview(webView)
     }
 
     func initialize(with viewController: UIViewController) {
@@ -180,6 +198,10 @@ class CMPManagerService: NSObject {
 
     func setUrlConfig(config: UrlConfig) {
         self.urlConfig = config
+        // Capture domain from config via KVC fallback
+        if let domainValue = (config.value(forKey: "domain") as? String) {
+            self.domainHost = domainValue
+        }
         if let cmpManager = self.cmpManager {
             cmpManager.setUrlConfig(config)
         }
@@ -294,6 +316,12 @@ class CMPManagerService: NSObject {
 
     func setATTStatus(_ status: Int) {
         cmpManager?.setATTStatus(status)
+    }
+
+    func isConsentRequired(completion: @escaping (Bool, Error?) -> Void) {
+        cmpManager?.isConsentRequired { isRequired, error in
+            completion(isRequired, error)
+        }
     }
 
     // MARK: - Helper Methods

@@ -118,6 +118,7 @@ abstract class CmpSdkPlatform extends PlatformInterface {
       required String domain,
       required String appName,
       required String language,
+      String? jsonConfig,
       bool noHash = false});
   Future<void> setWebViewConfig(ConsentLayerUIConfig config);
 
@@ -145,4 +146,5 @@ abstract class CmpSdkPlatform extends PlatformInterface {
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback);
   Future<void> setAutomaticConsentUpdatesEnabled(bool enabled);
   Future<void> setATTStatus(int status);
+  Future<bool> isConsentRequired();
 }

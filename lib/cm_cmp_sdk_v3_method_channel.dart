@@ -123,9 +123,17 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       required String domain,
       required String appName,
       required String language,
+      String? jsonConfig,
       bool noHash = false}) async {
     await methodChannel.invokeMethod('setUrlConfig',
-        {'id': id, 'domain': domain, 'appName': appName, 'language': language, 'noHash': noHash});
+        {
+          'id': id,
+          'domain': domain,
+          'appName': appName,
+          'language': language,
+          'jsonConfig': jsonConfig,
+          'noHash': noHash
+        });
   }
 
   @override
@@ -231,45 +239,36 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
 
   @override
   Future<void> setOnClickLinkCallback(OnClickLinkCallback? callback) async {
-    print('[DEBUG] Flutter: Setting link click callback: ${callback != null ? 'provided' : 'null'}');
     _onClickLinkCallback = callback;
 
+    if (callback == null) {
+      // Restore default handler; do not register with native when no callback is provided.
+      methodChannel.setMethodCallHandler(_handleMethodCall);
+      return;
+    }
+
     methodChannel.setMethodCallHandler((MethodCall call) async {
-      print('[DEBUG] Flutter: Received method call: ${call.method}');
       if (call.method == 'onClickLink') {
-        print('[DEBUG] Flutter: Handling onClickLink method call');
-        // Handle link clicks - ensure the callback is not null
         if (_onClickLinkCallback != null && call.arguments is Map<dynamic, dynamic>) {
           final args = call.arguments as Map<dynamic, dynamic>;
           final url = args['url'] as String;
-          print('[DEBUG] Flutter: Received link click for URL: $url');
-          
-          bool result;
           try {
-            result = _onClickLinkCallback?.call(url) ?? false;
-            print('[DEBUG] Flutter: Link handled by callback: $result (TRUE means handled by Flutter)');
-          } catch (e) {
-            print('[DEBUG] Flutter: Error in link callback: $e');
-            result = false;
+            final handled = _onClickLinkCallback?.call(url) ?? false;
+            return handled;
+          } catch (_) {
+            return false;
           }
-          return result;
         }
-        print('[DEBUG] Flutter: No callback available or invalid arguments, returning false');
         return false;
       } else {
-        print('[DEBUG] Flutter: Delegating to original handler: ${call.method}');
         await _handleMethodCall(call);
         return null;
       }
     });
 
     try {
-      print('[DEBUG] Flutter: Registering link click handler with native side');
       await methodChannel.invokeMethod('setOnClickLinkCallback');
-      print('[DEBUG] Flutter: Link click handler registered with native side');
-    } catch (e) {
-      print('[DEBUG] Flutter: Error setting link click handler: $e');
-    }
+    } catch (_) {}
   }
 
   @override
@@ -280,5 +279,11 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
   @override
   Future<void> setATTStatus(int status) async {
     await methodChannel.invokeMethod('setATTStatus', {'status': status});
+  }
+
+  @override
+  Future<bool> isConsentRequired() async {
+    final result = await methodChannel.invokeMethod<bool>('isConsentRequired');
+    return result ?? false;
   }
 }

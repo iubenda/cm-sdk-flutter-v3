@@ -1,11 +1,12 @@
 // main.dart
 import 'dart:developer' as developer;
 
+import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
 import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3_platform_interface.dart';
 import 'package:cm_cmp_sdk_v3/consent_layer_ui_config.dart';
 import 'package:cm_cmp_sdk_v3/constants/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:cm_cmp_sdk_v3/cm_cmp_sdk_v3.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
@@ -39,6 +40,61 @@ class _MyHomePageState extends State<MyHomePage> {
   final CMPManager _cmpManager = CMPManager.instance;
   String _lastAction = '';
 
+  // Pick ONE config below before running tests:
+  ConsentLayerUIConfig get _selectedConfig {
+    // final config = _fullScreenConfig;
+    // final config = _halfScreenTopConfig;
+    // final config = _halfScreenBottomConfig;
+    final config = _customCenterConfig;
+    return config;
+  }
+
+  ConsentLayerUIConfig get _fullScreenConfig => ConsentLayerUIConfig(
+        position: CmpPosition.fullScreen,
+        backgroundStyle: CmpBackgroundStyle.dimmed,
+        backgroundOpacity: 0.5,
+        cornerRadius: 0,
+        darkMode: true,
+        respectsSafeArea: true,
+        allowsOrientationChanges: true,
+        isCancelable: false,
+      );
+
+  ConsentLayerUIConfig get _halfScreenTopConfig => ConsentLayerUIConfig(
+        position: CmpPosition.halfScreenTop,
+        backgroundStyle: CmpBackgroundStyle.dimmed,
+        backgroundOpacity: 0.9,
+        cornerRadius: 20,
+        darkMode: false,
+        respectsSafeArea: true,
+        allowsOrientationChanges: true,
+        isCancelable: false,
+      );
+
+  ConsentLayerUIConfig get _halfScreenBottomConfig => ConsentLayerUIConfig(
+        position: CmpPosition.halfScreenBottom,
+        backgroundStyle: CmpBackgroundStyle.dimmed,
+        backgroundOpacity: 0.6,
+        cornerRadius: 12,
+        darkMode: false,
+        respectsSafeArea: true,
+        allowsOrientationChanges: true,
+        isCancelable: false,
+      );
+
+  ConsentLayerUIConfig get _customCenterConfig => ConsentLayerUIConfig(
+        position: CmpPosition.custom,
+        backgroundStyle: CmpBackgroundStyle.dimmed,
+        backgroundOpacity: 0.6,
+        cornerRadius: 16,
+        customSize: const Size(320, 420),
+        customGravity: CmpGravity.center,
+        darkMode: false,
+        respectsSafeArea: true,
+        allowsOrientationChanges: true,
+        isCancelable: false,
+      );
+
   @override
   void initState() {
     super.initState();
@@ -47,16 +103,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _initializeCMP() async {
     try {
-      final ConsentLayerUIConfig webviewConfig = ConsentLayerUIConfig(
-        position: CmpPosition.fullScreen,
-        darkMode: false,
-      );
-      await CMPManager.instance.setWebViewConfig(webviewConfig);
+      await CMPManager.instance.setWebViewConfig(_selectedConfig);
       await _cmpManager.setUrlConfig(
         id: "f5e3b73592c3c",
         domain: "a.delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",
+        // jsonConfig: '{"key":"value"}', // optional override
       );
 
       _cmpManager.addEventListeners(
@@ -76,32 +129,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
       _cmpManager.setOnClickLinkCallback((url) {
         developer.log('Link clicked: $url', name: 'CMP_DEMO');
-
-        // Check for the specific Google URL mentioned in your example
-        if (url.contains("click-behavior-tests")) {
-          try {
-            launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-            setState(() => _lastAction = 'Opened in browser: $url');
-            return true; // Return true to indicate we handled the URL
-          } catch (e) {
-            developer.log('Error opening URL: $url', name: 'CMP_DEMO', error: e);
-            setState(() => _lastAction = 'Error opening URL: $e');
-            return false;
-          }
-        } else {
-          // Let other URLs load in the WebView
-          setState(() => _lastAction = 'Loading in WebView: $url');
+        try {
+          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+          setState(() => _lastAction = 'Opened in browser: $url');
+          return true;
+        } catch (e) {
+          developer.log('Error opening URL: $url', name: 'CMP_DEMO', error: e);
+          setState(() => _lastAction = 'Error opening URL: $e');
           return false;
         }
       });
 
-      // Explicitly check and open consent layer if needed
-      // This matches the behavior of native Android and iOS demo apps
-      await _cmpManager.checkAndOpen();
+      _checkIsConsentRequired();
 
-      // await _cmpManager.importCMPInfo(
-      //     'Q1FaRWVQQVFaRWVQQUFmYjRCRU5DQUZnQVBMQUFFTEFBQWlnRjV3QVFGNWdYbkFCQVhtQUFBI181MV81Ml81NF8jX3MxMDUyX3MxX3MyNl9zMjYxMl9zOTA1X3MxNDQ4X2M3MzczN19VXyMxLS0tIw');
-
+      // await _cmpManager.checkAndOpen();
     } catch (e) {
       setState(() => _lastAction = 'Initialization error: $e');
     }
@@ -135,6 +176,31 @@ Purposes: ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join(', '
     }
   }
 
+  Future<void> _checkIsConsentRequired() async {
+    try {
+      final isRequired = await _cmpManager.isConsentRequired();
+      Fluttertoast.showToast(
+        msg: 'Consent required: $isRequired',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black87,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      setState(() => _lastAction = 'Is Consent Required: $isRequired');
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Error checking consent: $e',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      setState(() => _lastAction = 'Is Consent Required error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,37 +226,41 @@ Purposes: ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join(', '
             ),
             const SizedBox(height: 20),
             _buildButton('Open Consent Layer',
-                    () => _handleApiCall(() => _cmpManager.forceOpen(), 'Force Open')),
+                () => _handleApiCall(() => _cmpManager.forceOpen(), 'Force Open')),
             _buildButton('Check and Open',
-                    () => _handleApiCall(() => _cmpManager.checkAndOpen(), 'Check and Open')),
+                () => _handleApiCall(() => _cmpManager.checkAndOpen(), 'Check and Open')),
+            _buildButton('Is Consent Required?', _checkIsConsentRequired),
             _buildButton('Jump to Settings',
-                    () => _handleApiCall(() => _cmpManager.forceOpen(jumpToSettings: true), 'Jump to Settings')),
+                () => _handleApiCall(() => _cmpManager.forceOpen(jumpToSettings: true), 'Jump to Settings')),
             _buildButton('Accept All',
-                    () => _handleApiCall(() => _cmpManager.acceptAll(), 'Accept All')),
+                () => _handleApiCall(() => _cmpManager.acceptAll(), 'Accept All')),
             _buildButton('Reject All',
-                    () => _handleApiCall(() => _cmpManager.rejectAll(), 'Reject All')),
+                () => _handleApiCall(() => _cmpManager.rejectAll(), 'Reject All')),
             _buildButton('Export CMP Info',
-                    () => _handleApiCall(() => _cmpManager.exportCMPInfo(), 'Export CMP Info')),
+                () => _handleApiCall(() => _cmpManager.exportCMPInfo(), 'Export CMP Info')),
             _buildButton('Import CMP Info (Test)',
-                    () => _handleApiCall(() => _cmpManager.importCMPInfo('Q1FaRWVQQVFaRWVQQUFmYjRCRU5DQUZnQVBMQUFFTEFBQWlnRjV3QVFGNWdYbkFCQVhtQUFBI181MV81Ml81NF8jX3MxMDUyX3MxX3MyNl9zMjYxMl9zOTA1X3MxNDQ4X2M3MzczN19VXyMxLS0tIw'), 'Import CMP Info')),
+                () => _handleApiCall(
+                    () => _cmpManager.importCMPInfo(
+                        'Q1FaRWVQQVFaRWVQQUFmYjRCRU5DQUZnQVBMQUFFTEFBQWlnRjV3QVFGNWdYbkFCQVhtQUFBI181MV81Ml81NF8jX3MxMDUyX3MxX3MyNl9zMjYxMl9zOTA1X3MxNDQ4X2M3MzczN19VXyMxLS0tIw'),
+                    'Import CMP Info')),
             _buildButton('Get User Status',
-                    () => _handleApiCall(() => _cmpManager.getUserStatus(), 'User Status')),
+                () => _handleApiCall(() => _cmpManager.getUserStatus(), 'User Status')),
             _buildButton('Reset Data',
-                    () => _handleApiCall(() => _cmpManager.resetConsentManagementData(), 'Reset Data')),
+                () => _handleApiCall(() => _cmpManager.resetConsentManagementData(), 'Reset Data')),
             _buildButton('Get Google Consent Mode',
-                    () => _handleApiCall(() => _cmpManager.getGoogleConsentModeStatus(), 'Google Consent Mode')),
+                () => _handleApiCall(() => _cmpManager.getGoogleConsentModeStatus(), 'Google Consent Mode')),
             _buildButton('Check Vendor: s2789',
-                    () => _handleApiCall(() => _cmpManager.getStatusForVendor('s2789'), 'Vendor s2789')),
+                () => _handleApiCall(() => _cmpManager.getStatusForVendor('s2789'), 'Vendor s2789')),
             _buildButton('Check Purpose: c53',
-                    () => _handleApiCall(() => _cmpManager.getStatusForPurpose('c53'), 'Purpose c53')),
+                () => _handleApiCall(() => _cmpManager.getStatusForPurpose('c53'), 'Purpose c53')),
             _buildButton('Accept Vendors s2790,s2791',
-                    () => _handleApiCall(() => _cmpManager.acceptVendors(['s2790', 's2791']), 'Accept Vendors')),
+                () => _handleApiCall(() => _cmpManager.acceptVendors(['s2790', 's2791']), 'Accept Vendors')),
             _buildButton('Reject Vendors s2790,s2791',
-                    () => _handleApiCall(() => _cmpManager.rejectVendors(['s2790', 's2791']), 'Reject Vendors')),
+                () => _handleApiCall(() => _cmpManager.rejectVendors(['s2790', 's2791']), 'Reject Vendors')),
             _buildButton('Accept Purposes c52,c53',
-                    () => _handleApiCall(() => _cmpManager.acceptPurposes(['c52', 'c53']), 'Accept Purposes')),
+                () => _handleApiCall(() => _cmpManager.acceptPurposes(['c52', 'c53']), 'Accept Purposes')),
             _buildButton('Reject Purposes c52,c53',
-                    () => _handleApiCall(() => _cmpManager.rejectPurposes(['c52', 'c53']), 'Reject Purposes')),
+                () => _handleApiCall(() => _cmpManager.rejectPurposes(['c52', 'c53']), 'Reject Purposes')),
           ],
         ),
       ),

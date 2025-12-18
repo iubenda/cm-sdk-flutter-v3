@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 
 import 'constants/constants.dart';
 
+enum CmpGravity { top, center, bottom }
+
 class ConsentLayerUIConfig {
   final CmpPosition position;
   final CmpBackgroundStyle backgroundStyle;
   final double cornerRadius;
   final bool respectsSafeArea;
   final bool allowsOrientationChanges;
+  final bool isCancelable;
+  final Color? navigationBarColor;
   final Color? backgroundColor;
   final double? backgroundOpacity;
-  final Rect? customPosition;
+  final Size? customSize;
+  final CmpGravity customGravity;
   final bool darkMode;
 
   ConsentLayerUIConfig({
@@ -19,9 +24,12 @@ class ConsentLayerUIConfig {
     this.cornerRadius = 0.0,
     this.respectsSafeArea = true,
     this.allowsOrientationChanges = true,
+    this.isCancelable = true,
+    this.navigationBarColor,
     this.backgroundColor,
     this.backgroundOpacity,
-    this.customPosition,
+    this.customSize,
+    this.customGravity = CmpGravity.center,
     this.darkMode = false,
   });
 
@@ -32,14 +40,15 @@ class ConsentLayerUIConfig {
       'cornerRadius': cornerRadius,
       'respectsSafeArea': respectsSafeArea,
       'allowsOrientationChanges': allowsOrientationChanges,
+      'isCancelable': isCancelable,
+      'navigationBarColor': navigationBarColor?.value,
       'backgroundColor': backgroundColor?.value,
       'backgroundOpacity': backgroundOpacity,
-      'customPosition': customPosition != null
+      'customPosition': customSize != null
           ? {
-              'left': customPosition!.left,
-              'top': customPosition!.top,
-              'right': customPosition!.right,
-              'bottom': customPosition!.bottom,
+              'width': customSize!.width,
+              'height': customSize!.height,
+              'gravity': _gravityToString(),
             }
           : null,
       'darkMode': darkMode,
@@ -56,6 +65,17 @@ class ConsentLayerUIConfig {
         return 'halfScreenBottom';
       case CmpPosition.custom:
         return 'custom';
+    }
+  }
+
+  String _gravityToString() {
+    switch (customGravity) {
+      case CmpGravity.top:
+        return 'top';
+      case CmpGravity.bottom:
+        return 'bottom';
+      case CmpGravity.center:
+        return 'center';
     }
   }
 

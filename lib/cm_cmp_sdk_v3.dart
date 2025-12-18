@@ -17,6 +17,7 @@ class CMPManager {
     required String domain,
     required String appName,
     required String language,
+    String? jsonConfig,
     bool noHash = false,
   }) async {
     await _methodChannel.setUrlConfig(
@@ -24,10 +25,9 @@ class CMPManager {
       domain: domain,
       appName: appName,
       language: language,
+      jsonConfig: jsonConfig,
       noHash: noHash,
     );
-
-    await _methodChannel.setOnClickLinkCallback(null);
 
     if (!_isInitialized) {
       await _methodChannel.initialize();
@@ -167,5 +167,22 @@ class CMPManager {
   /// ```
   Future<void> setATTStatus(int status) {
     return CmpSdkPlatform.instance.setATTStatus(status);
+  }
+
+  /// Checks if consent is required without opening the consent UI.
+  /// 
+  /// Returns true if consent is required, false otherwise.
+  /// This is useful for determining whether to show consent-related UI elements
+  /// or to check consent status before performing certain operations.
+  ///
+  /// Example:
+  /// ```dart
+  /// final isRequired = await CMPManager.instance.isConsentRequired();
+  /// if (isRequired) {
+  ///   // Show consent UI or handle accordingly
+  /// }
+  /// ```
+  Future<bool> isConsentRequired() {
+    return CmpSdkPlatform.instance.isConsentRequired();
   }
 }

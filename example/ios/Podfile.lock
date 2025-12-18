@@ -1,7 +1,7 @@
 PODS:
-  - cm-sdk-ios-v3 (3.6.0)
-  - cm_cmp_sdk_v3 (3.6.0):
-    - cm-sdk-ios-v3 (= 3.6.0)
+  - cm-sdk-ios-v3 (3.8.0)
+  - cm_cmp_sdk_v3 (3.8.0):
+    - cm-sdk-ios-v3 (= 3.8.0)
     - Flutter
   - Flutter (1.0.0)
   - fluttertoast (0.0.2):
@@ -35,12 +35,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
-  cm-sdk-ios-v3: a03d46fcb4cf77121913a0c5f86a8ca9f53414bb
-  cm_cmp_sdk_v3: 7ebe774619afc6b7992487573e1d397082ae1739
+  cm-sdk-ios-v3: 62d1b6b9a014efe15a00f7f267750b5b9becd515
+  cm_cmp_sdk_v3: 8e0497dfba6b833cbe2ac69aed7f731f9fe62993
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
-  url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
+  url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
 
 PODFILE CHECKSUM: 9c46fd01abff66081b39f5fa5767b3f1d0b11d76
 
