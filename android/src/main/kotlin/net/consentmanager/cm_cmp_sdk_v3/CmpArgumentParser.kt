@@ -35,8 +35,9 @@ class CmpArgumentParser {
             val language = args["language"] as String
             val appName = args["appName"] as String
             val noHash = args["noHash"] as? Boolean ?: false
+            val webViewConnectionTimeoutMillis = (args["webViewConnectionTimeoutMillis"] as? Number)?.toLong() ?: 3000L
 
-            return UrlConfig(id = id, domain = domain, language = language, appName = appName, jsonConfig = "{}", noHash = noHash)
+            return UrlConfig(id = id, domain = domain, language = language, appName = appName, jsonConfig = "{}", noHash = noHash, webViewConnectionTimeoutMillis = webViewConnectionTimeoutMillis)
         }
 
         private fun parsePosition(positionString: String?, args: Map<String, Any>, activity: Activity?): ConsentLayerUIConfig.Position {

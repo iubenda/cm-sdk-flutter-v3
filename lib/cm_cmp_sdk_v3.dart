@@ -12,6 +12,7 @@ class CMPManager {
   CMPManager._internal();
 
   /// Set the URL configuration and initialize the SDK
+  /// [webViewConnectionTimeoutMillis] WebView connection timeout in ms. Default 3000. 0 = disabled. Clamped 100–60000.
   Future<void> setUrlConfig({
     required String id,
     required String domain,
@@ -19,6 +20,7 @@ class CMPManager {
     required String language,
     String? jsonConfig,
     bool noHash = false,
+    int? webViewConnectionTimeoutMillis,
   }) async {
     await _methodChannel.setUrlConfig(
       id: id,
@@ -27,6 +29,7 @@ class CMPManager {
       language: language,
       jsonConfig: jsonConfig,
       noHash: noHash,
+      webViewConnectionTimeoutMillis: webViewConnectionTimeoutMillis,
     );
 
     if (!_isInitialized) {

@@ -124,16 +124,18 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       required String appName,
       required String language,
       String? jsonConfig,
-      bool noHash = false}) async {
-    await methodChannel.invokeMethod('setUrlConfig',
-        {
-          'id': id,
-          'domain': domain,
-          'appName': appName,
-          'language': language,
-          'jsonConfig': jsonConfig,
-          'noHash': noHash
-        });
+      bool noHash = false,
+      int? webViewConnectionTimeoutMillis}) async {
+    await methodChannel.invokeMethod('setUrlConfig', {
+      'id': id,
+      'domain': domain,
+      'appName': appName,
+      'language': language,
+      'jsonConfig': jsonConfig,
+      'noHash': noHash,
+      if (webViewConnectionTimeoutMillis != null)
+        'webViewConnectionTimeoutMillis': webViewConnectionTimeoutMillis,
+    });
   }
 
   @override

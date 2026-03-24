@@ -136,7 +136,8 @@ class CMPArgumentParser {
         let appName = args["appName"] as! String
         let jsonConfig = args["jsonConfig"] as? String
         let noHash = args["noHash"] as? Bool ?? false
+        let webViewConnectionTimeoutMillis = (args["webViewConnectionTimeoutMillis"] as? NSNumber)?.intValue ?? 3000
 
-        return UrlConfig(id: id, domain: domain, language: language, appName: appName, jsonConfig: jsonConfig, noHash: noHash)
+        return UrlConfig(id: id, domain: domain, language: language, appName: appName, jsonConfig: jsonConfig, noHash: noHash, webViewConnectionTimeoutMillis: webViewConnectionTimeoutMillis)
     }
 }
