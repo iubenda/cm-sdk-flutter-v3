@@ -102,10 +102,11 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         val appName = args["appName"] as? String ?: ""
         val jsonConfig = args["jsonConfig"] as? String ?: "{}"
         val noHash = args["noHash"] as? Boolean ?: false
+        val webViewConnectionTimeoutMillis = (args["webViewConnectionTimeoutMillis"] as? Number)?.toLong() ?: 3000L
 
         Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName, noHash: $noHash")
 
-        urlConfig = UrlConfig(id, domain, language, appName, jsonConfig = jsonConfig, noHash = noHash)
+        urlConfig = UrlConfig(id, domain, language, appName, jsonConfig = jsonConfig, noHash = noHash, webViewConnectionTimeoutMillis = webViewConnectionTimeoutMillis)
         cmpManager = null
 
         try {
@@ -132,7 +133,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     }
 
     private fun acceptVendors(call: MethodCall, result: Result) {
-        val ids = call.argument<List<String>>("ids") ?: run {
+        val ids = call.argument<List<String>>("vendors") ?: run {
             result.error("INVALID_ARGUMENTS", "Vendor IDs are required", null)
             return
         }
@@ -142,7 +143,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     }
 
     private fun rejectVendors(call: MethodCall, result: Result) {
-        val ids = call.argument<List<String>>("ids") ?: run {
+        val ids = call.argument<List<String>>("vendors") ?: run {
             result.error("INVALID_ARGUMENTS", "Vendor IDs are required", null)
             return
         }
@@ -152,7 +153,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     }
 
     private fun acceptPurposes(call: MethodCall, result: Result) {
-        val ids = call.argument<List<String>>("ids") ?: run {
+        val ids = call.argument<List<String>>("purposes") ?: run {
             result.error("INVALID_ARGUMENTS", "Purpose IDs are required", null)
             return
         }
@@ -163,7 +164,7 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
     }
 
     private fun rejectPurposes(call: MethodCall, result: Result) {
-        val ids = call.argument<List<String>>("ids") ?: run {
+        val ids = call.argument<List<String>>("purposes") ?: run {
             result.error("INVALID_ARGUMENTS", "Purpose IDs are required", null)
             return
         }

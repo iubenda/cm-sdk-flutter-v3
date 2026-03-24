@@ -41,8 +41,8 @@ class ConsentLayerUIConfig {
       'respectsSafeArea': respectsSafeArea,
       'allowsOrientationChanges': allowsOrientationChanges,
       'isCancelable': isCancelable,
-      'navigationBarColor': navigationBarColor?.value,
-      'backgroundColor': backgroundColor?.value,
+      'navigationBarColor': navigationBarColor?.toARGB32(),
+      'backgroundColor': backgroundColor?.toARGB32(),
       'backgroundOpacity': backgroundOpacity,
       'customPosition': customSize != null
           ? {

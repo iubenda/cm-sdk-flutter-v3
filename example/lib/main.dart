@@ -49,38 +49,38 @@ class _MyHomePageState extends State<MyHomePage> {
     return config;
   }
 
-  ConsentLayerUIConfig get _fullScreenConfig => ConsentLayerUIConfig(
-        position: CmpPosition.fullScreen,
-        backgroundStyle: CmpBackgroundStyle.dimmed,
-        backgroundOpacity: 0.5,
-        cornerRadius: 0,
-        darkMode: true,
-        respectsSafeArea: true,
-        allowsOrientationChanges: true,
-        isCancelable: false,
-      );
-
-  ConsentLayerUIConfig get _halfScreenTopConfig => ConsentLayerUIConfig(
-        position: CmpPosition.halfScreenTop,
-        backgroundStyle: CmpBackgroundStyle.dimmed,
-        backgroundOpacity: 0.9,
-        cornerRadius: 20,
-        darkMode: false,
-        respectsSafeArea: true,
-        allowsOrientationChanges: true,
-        isCancelable: false,
-      );
-
-  ConsentLayerUIConfig get _halfScreenBottomConfig => ConsentLayerUIConfig(
-        position: CmpPosition.halfScreenBottom,
-        backgroundStyle: CmpBackgroundStyle.dimmed,
-        backgroundOpacity: 0.6,
-        cornerRadius: 12,
-        darkMode: false,
-        respectsSafeArea: true,
-        allowsOrientationChanges: true,
-        isCancelable: false,
-      );
+  // ConsentLayerUIConfig get _fullScreenConfig => ConsentLayerUIConfig(
+  //       position: CmpPosition.fullScreen,
+  //       backgroundStyle: CmpBackgroundStyle.dimmed,
+  //       backgroundOpacity: 0.5,
+  //       cornerRadius: 0,
+  //       darkMode: true,
+  //       respectsSafeArea: true,
+  //       allowsOrientationChanges: true,
+  //       isCancelable: false,
+  //     );
+  //
+  // ConsentLayerUIConfig get _halfScreenTopConfig => ConsentLayerUIConfig(
+  //       position: CmpPosition.halfScreenTop,
+  //       backgroundStyle: CmpBackgroundStyle.dimmed,
+  //       backgroundOpacity: 0.9,
+  //       cornerRadius: 20,
+  //       darkMode: false,
+  //       respectsSafeArea: true,
+  //       allowsOrientationChanges: true,
+  //       isCancelable: false,
+  //     );
+  //
+  // ConsentLayerUIConfig get _halfScreenBottomConfig => ConsentLayerUIConfig(
+  //       position: CmpPosition.halfScreenBottom,
+  //       backgroundStyle: CmpBackgroundStyle.dimmed,
+  //       backgroundOpacity: 0.6,
+  //       cornerRadius: 12,
+  //       darkMode: false,
+  //       respectsSafeArea: true,
+  //       allowsOrientationChanges: true,
+  //       isCancelable: false,
+  //     );
 
   ConsentLayerUIConfig get _customCenterConfig => ConsentLayerUIConfig(
         position: CmpPosition.custom,
@@ -109,6 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
         domain: "a.delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",
+        webViewConnectionTimeoutMillis: 7500
         // jsonConfig: '{"key":"value"}', // optional override
       );
 
@@ -253,14 +254,14 @@ Purposes: ${status.purposes.entries.map((e) => '${e.key}: ${e.value}').join(', '
                 () => _handleApiCall(() => _cmpManager.getStatusForVendor('s2789'), 'Vendor s2789')),
             _buildButton('Check Purpose: c53',
                 () => _handleApiCall(() => _cmpManager.getStatusForPurpose('c53'), 'Purpose c53')),
-            _buildButton('Accept Vendors s2790,s2791',
-                () => _handleApiCall(() => _cmpManager.acceptVendors(['s2790', 's2791']), 'Accept Vendors')),
-            _buildButton('Reject Vendors s2790,s2791',
-                () => _handleApiCall(() => _cmpManager.rejectVendors(['s2790', 's2791']), 'Reject Vendors')),
-            _buildButton('Accept Purposes c52,c53',
-                () => _handleApiCall(() => _cmpManager.acceptPurposes(['c52', 'c53']), 'Accept Purposes')),
-            _buildButton('Reject Purposes c52,c53',
-                () => _handleApiCall(() => _cmpManager.rejectPurposes(['c52', 'c53']), 'Reject Purposes')),
+            _buildButton('Accept Vendors s1052, s2612',
+                () => _handleApiCall(() => _cmpManager.acceptVendors(['s1052', 's2612']), 'Accept Vendors')),
+            _buildButton('Reject Vendors s1052, s2612',
+                () => _handleApiCall(() => _cmpManager.rejectVendors(['s1052', 's2612']), 'Reject Vendors')),
+            _buildButton('Accept Purposes c52,c54',
+                () => _handleApiCall(() => _cmpManager.acceptPurposes(['c52', 'c54']), 'Accept Purposes')),
+            _buildButton('Reject Purposes c52,c54',
+                () => _handleApiCall(() => _cmpManager.rejectPurposes(['c52', 'c54']), 'Reject Purposes')),
           ],
         ),
       ),
