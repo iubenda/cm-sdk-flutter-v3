@@ -42,24 +42,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Pick ONE config below before running tests:
   ConsentLayerUIConfig get _selectedConfig {
-    // final config = _fullScreenConfig;
+    final config = _fullScreenConfig;
     // final config = _halfScreenTopConfig;
     // final config = _halfScreenBottomConfig;
-    final config = _customCenterConfig;
+    // final config = _customCenterConfig;
     return config;
   }
 
-  // ConsentLayerUIConfig get _fullScreenConfig => ConsentLayerUIConfig(
-  //       position: CmpPosition.fullScreen,
-  //       backgroundStyle: CmpBackgroundStyle.dimmed,
-  //       backgroundOpacity: 0.5,
-  //       cornerRadius: 0,
-  //       darkMode: true,
-  //       respectsSafeArea: true,
-  //       allowsOrientationChanges: true,
-  //       isCancelable: false,
-  //     );
-  //
+  ConsentLayerUIConfig get _fullScreenConfig => ConsentLayerUIConfig(
+        position: CmpPosition.fullScreen,
+        backgroundStyle: CmpBackgroundStyle.dimmed,
+        backgroundOpacity: 0.5,
+        cornerRadius: 30,
+        darkMode: false,
+        respectsSafeArea: true,
+        allowsOrientationChanges: true,
+        isCancelable: false,
+      );
+
   // ConsentLayerUIConfig get _halfScreenTopConfig => ConsentLayerUIConfig(
   //       position: CmpPosition.halfScreenTop,
   //       backgroundStyle: CmpBackgroundStyle.dimmed,
@@ -82,18 +82,18 @@ class _MyHomePageState extends State<MyHomePage> {
   //       isCancelable: false,
   //     );
 
-  ConsentLayerUIConfig get _customCenterConfig => ConsentLayerUIConfig(
-        position: CmpPosition.custom,
-        backgroundStyle: CmpBackgroundStyle.dimmed,
-        backgroundOpacity: 0.6,
-        cornerRadius: 16,
-        customSize: const Size(320, 420),
-        customGravity: CmpGravity.center,
-        darkMode: false,
-        respectsSafeArea: true,
-        allowsOrientationChanges: true,
-        isCancelable: false,
-      );
+  // ConsentLayerUIConfig get _customCenterConfig => ConsentLayerUIConfig(
+  //       position: CmpPosition.custom,
+  //       backgroundStyle: CmpBackgroundStyle.dimmed,
+  //       backgroundOpacity: 0.6,
+  //       cornerRadius: 16,
+  //       customSize: const Size(320, 420),
+  //       customGravity: CmpGravity.center,
+  //       darkMode: false,
+  //       respectsSafeArea: true,
+  //       allowsOrientationChanges: true,
+  //       isCancelable: false,
+  //     );
 
   @override
   void initState() {
@@ -105,11 +105,14 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       await CMPManager.instance.setWebViewConfig(_selectedConfig);
       await _cmpManager.setUrlConfig(
+        // id: "aff7d61f-9bdc-4fdc-8257-eb26ee934ff4",
+        // id: "c0d108ad-25d0-4dd9-9840-45ebb480aa35",
         id: "f5e3b73592c3c",
         domain: "a.delivery.consentmanager.net",
         appName: "CMDemoAppFlutter",
         language: "EN",
-        webViewConnectionTimeoutMillis: 7500
+        webViewConnectionTimeoutMillis: 7500,
+        forceRegulation: "LGPD"
         // jsonConfig: '{"key":"value"}', // optional override
       );
 

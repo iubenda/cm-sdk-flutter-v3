@@ -20,6 +20,7 @@ class CMPManager {
     required String language,
     String? jsonConfig,
     bool noHash = false,
+    String? forceRegulation,
     int? webViewConnectionTimeoutMillis,
   }) async {
     await _methodChannel.setUrlConfig(
@@ -29,6 +30,7 @@ class CMPManager {
       language: language,
       jsonConfig: jsonConfig,
       noHash: noHash,
+      forceRegulation: forceRegulation,
       webViewConnectionTimeoutMillis: webViewConnectionTimeoutMillis,
     );
 

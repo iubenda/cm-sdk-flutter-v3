@@ -14,6 +14,8 @@ class ConsentLayerUIConfig {
   final Color? navigationBarColor;
   final Color? backgroundColor;
   final double? backgroundOpacity;
+  /// Android (API 31+): window background blur radius in logical pixels. Ignored on iOS.
+  final double? blurRadius;
   final Size? customSize;
   final CmpGravity customGravity;
   final bool darkMode;
@@ -28,6 +30,7 @@ class ConsentLayerUIConfig {
     this.navigationBarColor,
     this.backgroundColor,
     this.backgroundOpacity,
+    this.blurRadius,
     this.customSize,
     this.customGravity = CmpGravity.center,
     this.darkMode = false,
@@ -44,6 +47,7 @@ class ConsentLayerUIConfig {
       'navigationBarColor': navigationBarColor?.toARGB32(),
       'backgroundColor': backgroundColor?.toARGB32(),
       'backgroundOpacity': backgroundOpacity,
+      if (blurRadius != null) 'blurRadius': blurRadius,
       'customPosition': customSize != null
           ? {
               'width': customSize!.width,

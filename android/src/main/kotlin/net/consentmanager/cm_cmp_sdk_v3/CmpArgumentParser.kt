@@ -34,10 +34,21 @@ class CmpArgumentParser {
             val domain = args["domain"] as String
             val language = args["language"] as String
             val appName = args["appName"] as String
+            val jsonConfig = args["jsonConfig"] as? String ?: "{}"
             val noHash = args["noHash"] as? Boolean ?: false
+            val forceRegulation = args["forceRegulation"] as? String
             val webViewConnectionTimeoutMillis = (args["webViewConnectionTimeoutMillis"] as? Number)?.toLong() ?: 3000L
 
-            return UrlConfig(id = id, domain = domain, language = language, appName = appName, jsonConfig = "{}", noHash = noHash, webViewConnectionTimeoutMillis = webViewConnectionTimeoutMillis)
+            return UrlConfig(
+                id = id,
+                domain = domain,
+                language = language,
+                appName = appName,
+                jsonConfig = jsonConfig,
+                noHash = noHash,
+                webViewConnectionTimeoutMillis = webViewConnectionTimeoutMillis,
+                forceRegulation = forceRegulation
+            )
         }
 
         private fun parsePosition(positionString: String?, args: Map<String, Any>, activity: Activity?): ConsentLayerUIConfig.Position {
@@ -76,6 +87,11 @@ class CmpArgumentParser {
                     ConsentLayerUIConfig.BackgroundStyle.solid(colorValue)
                 }
                 "none" -> ConsentLayerUIConfig.BackgroundStyle.none()
+                "blur" -> {
+                    val colorValue = args["backgroundColor"] as? Int ?: Color.BLACK
+                    val opacity = (args["backgroundOpacity"] as? Double)?.toFloat() ?: 0.5f
+                    ConsentLayerUIConfig.BackgroundStyle.blur(colorValue, opacity)
+                }
                 else -> {
                     val colorValue = args["backgroundColor"] as? Int ?: Color.BLACK
                     val opacity = (args["backgroundOpacity"] as? Double)?.toFloat() ?: 0.5f

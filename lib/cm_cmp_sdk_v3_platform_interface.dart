@@ -120,6 +120,7 @@ abstract class CmpSdkPlatform extends PlatformInterface {
       required String language,
       String? jsonConfig,
       bool noHash = false,
+      String? forceRegulation,
       int? webViewConnectionTimeoutMillis});
   Future<void> setWebViewConfig(ConsentLayerUIConfig config);
 
