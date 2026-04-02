@@ -125,6 +125,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       required String language,
       String? jsonConfig,
       bool noHash = false,
+      String? forceRegulation,
       int? webViewConnectionTimeoutMillis}) async {
     await methodChannel.invokeMethod('setUrlConfig', {
       'id': id,
@@ -133,6 +134,7 @@ class MethodChannelCmpSdk extends CmpSdkPlatform {
       'language': language,
       'jsonConfig': jsonConfig,
       'noHash': noHash,
+      'forceRegulation': forceRegulation,
       if (webViewConnectionTimeoutMillis != null)
         'webViewConnectionTimeoutMillis': webViewConnectionTimeoutMillis,
     });

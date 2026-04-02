@@ -102,11 +102,21 @@ class CmpSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, CMPManager
         val appName = args["appName"] as? String ?: ""
         val jsonConfig = args["jsonConfig"] as? String ?: "{}"
         val noHash = args["noHash"] as? Boolean ?: false
+        val forceRegulation = args["forceRegulation"] as? String
         val webViewConnectionTimeoutMillis = (args["webViewConnectionTimeoutMillis"] as? Number)?.toLong() ?: 3000L
 
-        Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName, noHash: $noHash")
+        Log.d("CmpSdkPlugin", "Extracted config - id: $id, domain: $domain, language: $language, appName: $appName, noHash: $noHash, forceRegulation: $forceRegulation")
 
-        urlConfig = UrlConfig(id, domain, language, appName, jsonConfig = jsonConfig, noHash = noHash, webViewConnectionTimeoutMillis = webViewConnectionTimeoutMillis)
+        urlConfig = UrlConfig(
+            id,
+            domain,
+            language,
+            appName,
+            jsonConfig = jsonConfig,
+            noHash = noHash,
+            webViewConnectionTimeoutMillis = webViewConnectionTimeoutMillis,
+            forceRegulation = forceRegulation
+        )
         cmpManager = null
 
         try {
