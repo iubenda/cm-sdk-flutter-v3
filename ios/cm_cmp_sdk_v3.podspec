@@ -12,7 +12,7 @@ The consentmanager (CMP) Flutter Plugin allows you to easily integrate Consent M
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Consentmanager' => 'skander@iubenda.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'cm_cmp_sdk_v3/Sources/cm_cmp_sdk_v3/**/*'
   s.vendored_frameworks = 'Frameworks/cm_sdk_ios_v3.xcframework'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
