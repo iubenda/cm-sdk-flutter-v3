@@ -1,11 +1,11 @@
 name: cm_cmp_sdk_v3
 description: "The CMP Plugin allows you to integrate Consent Management functionality."
-version: 3.11.0
+version: 3.12.0
 homepage: "https://www.consentmanager.net"
 
 environment:
-  sdk: '>=3.2.6 <4.0.0'
-  flutter: '>=3.3.0'
+  sdk: ^3.12.0
+  flutter: '>=3.44.0'
 
 dependencies:
   flutter:
